@@ -25,36 +25,11 @@ Personal Claude Code skill overlay on top of [superpowers](https://github.com/ob
 
 ## Installation
 
-### First time setup
+1. Install the marketplace in claude code
+   `/plugin marketplace add @snjnlsn/snjnlsn-marketplace`
 
-1. Add this repo as a marketplace in `~/.claude/settings.json` under `extraKnownMarketplaces`:
-
-```json
-"my-superpowers-marketplace": {
-  "source": {
-    "source": "file",
-    "path": "/Users/sanjay/Code/my-superpowers/marketplace.json"
-  }
-}
-```
-
-> Note: the path is machine-specific. Update it if cloning to a different location.
-
-2. Add the plugin to `enabledPlugins`:
-
-```json
-"my-superpowers@my-superpowers-marketplace": true
-```
-
-3. Run `/reload-plugins` in Claude Code.
-
-### On a new machine
-
-```bash
-git clone git@github.com:snjnlsn/my-superpowers.git ~/Code/my-superpowers
-# Add marketplace + enabledPlugins entries to ~/.claude/settings.json (update path)
-# Run /reload-plugins in Claude Code
-```
+2. Install the plugin
+   `/plugin install superpowers-override@snjnlsn-marketplace`
 
 ## After structural changes (new agents, hooks, commands)
 
