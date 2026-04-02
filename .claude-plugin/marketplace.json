@@ -1,0 +1,14 @@
+{
+  "name": "snjnlsn-marketplace",
+  "description": "Personal plugin marketplace",
+  "owner": {
+    "name": "Sanjay Nelson"
+  },
+  "plugins": [
+    {
+      "name": "superpowers-override",
+      "description": "Personal skill overlay — private additions and modifications to superpowers",
+      "source": "./plugins/superpowers-override"
+    }
+  ]
+}
