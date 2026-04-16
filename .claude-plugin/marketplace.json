@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "overrides",
-      "description": "Personal skill overlay — private additions and modifications to superpowers",
+      "description": "Personal plugin overrides — customizes and hooks into other Claude Code plugins.",
       "source": "./plugins/overrides"
     }
   ]

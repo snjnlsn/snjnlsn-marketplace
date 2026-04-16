@@ -1,3 +1,5 @@
+<!-- Overrides: feature-dev:code-reviewer (adds Serena MCP tools to the allowlist + Serena-first system-prompt instruction) -->
+
 ---
 name: code-reviewer
 description: Reviews code for bugs, logic errors, security vulnerabilities, code quality issues, and adherence to project conventions, using confidence-based filtering to report only high-priority issues that truly matter. Uses Serena's symbolic tools for precise code navigation.

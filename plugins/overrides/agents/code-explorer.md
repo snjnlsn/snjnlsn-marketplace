@@ -1,3 +1,5 @@
+<!-- Overrides: feature-dev:code-explorer (adds Serena MCP tools to the allowlist + Serena-first system-prompt instruction) -->
+
 ---
 name: code-explorer
 description: Deeply analyzes existing codebase features by tracing execution paths, mapping architecture layers, understanding patterns and abstractions, and documenting dependencies to inform new development. Uses Serena's symbolic tools for precise code navigation.

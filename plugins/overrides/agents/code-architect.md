@@ -1,3 +1,5 @@
+<!-- Overrides: feature-dev:code-architect (adds Serena MCP tools to the allowlist + Serena-first system-prompt instruction) -->
+
 ---
 name: code-architect
 description: Designs feature architectures by analyzing existing codebase patterns and conventions, then providing comprehensive implementation blueprints with specific files to create/modify, component designs, data flows, and build sequences. Uses Serena's symbolic tools for precise code navigation.
