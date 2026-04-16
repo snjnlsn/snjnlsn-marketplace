@@ -18,10 +18,7 @@ Empty directories (`hooks/`, `commands/`) are kept as `.gitkeep` placeholders fo
 
 1. Find the upstream file in `~/.claude/plugins/cache/claude-plugins-official/<plugin>/<version>/`
 2. Copy it to the mirrored location here (e.g. `agents/<name>.md` or `skills/<name>/SKILL.md`)
-3. Add a header comment above the frontmatter documenting the override target:
-   ```
-   <!-- Overrides: <plugin>:<name> (what's different) -->
-   ```
+3. Add a row to the "What's inside" table above documenting which upstream file this overrides and what's different
 4. Edit as desired, keeping the same `name:` in frontmatter
 5. Hot-reloads automatically — no reinstall needed
 
