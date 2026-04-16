@@ -1,6 +1,6 @@
 ---
 name: use-serena-agents
-description: Use when dispatching a subagent for code exploration, architecture design, or code review — routes to the Serena-enabled variants in the superpowers-override plugin instead of the stock feature-dev agents, and ensures every dispatched Agent prompt carries an explicit Serena activation instruction.
+description: Use when dispatching a subagent for code exploration, architecture design, or code review — routes to the Serena-enabled variants in the overrides plugin instead of the stock feature-dev agents, and ensures every dispatched Agent prompt carries an explicit Serena activation instruction.
 ---
 
 # Route code-work subagents to Serena-enabled variants
@@ -9,17 +9,17 @@ description: Use when dispatching a subagent for code exploration, architecture 
 
 The stock `feature-dev:code-explorer`, `feature-dev:code-architect`, and `feature-dev:code-reviewer` agents declare a restricted `tools:` allowlist that omits Serena's MCP tools — so even when the user's CLAUDE.md instructs Serena-first navigation, these subagents *cannot* call Serena. They fall back to `Grep` + `Read`, which is slower and less semantic.
 
-The `superpowers-override` plugin ships mirror agents with identical behavior plus Serena tools in the allowlist and a Serena-first instruction at the top of each system prompt.
+The `overrides` plugin ships mirror agents with identical behavior plus Serena tools in the allowlist and a Serena-first instruction at the top of each system prompt.
 
 ## The rule
 
-When dispatching a subagent via the `Agent` tool for any of the following tasks, **always prefer the `superpowers-override:` variant over the `feature-dev:` variant**:
+When dispatching a subagent via the `Agent` tool for any of the following tasks, **always prefer the `overrides:` variant over the `feature-dev:` variant**:
 
 | Task | Use this `subagent_type` | NOT this |
 |---|---|---|
-| Exploring or understanding an existing feature | `superpowers-override:code-explorer` | `feature-dev:code-explorer` |
-| Designing a new feature architecture | `superpowers-override:code-architect` | `feature-dev:code-architect` |
-| Reviewing code for bugs / convention compliance | `superpowers-override:code-reviewer` | `feature-dev:code-reviewer` |
+| Exploring or understanding an existing feature | `overrides:code-explorer` | `feature-dev:code-explorer` |
+| Designing a new feature architecture | `overrides:code-architect` | `feature-dev:code-architect` |
+| Reviewing code for bugs / convention compliance | `overrides:code-reviewer` | `feature-dev:code-reviewer` |
 
 This applies regardless of which upstream skill is doing the dispatching — `subagent-driven-development`, `dispatching-parallel-agents`, `executing-plans`, `feature-dev:feature-dev`, ad-hoc direct Agent calls, etc. The override variants are drop-in replacements.
 

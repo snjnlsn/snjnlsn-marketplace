@@ -6,9 +6,9 @@
   },
   "plugins": [
     {
-      "name": "superpowers-override",
-      "description": "Personal skill overlay — private additions and modifications to superpowers",
-      "source": "./plugins/superpowers-override"
+      "name": "overrides",
+      "description": "Personal plugin overrides — customizes and hooks into other Claude Code plugins.",
+      "source": "./plugins/overrides"
     }
   ]
 }
