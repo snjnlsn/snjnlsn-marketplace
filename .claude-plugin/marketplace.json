@@ -6,9 +6,9 @@
   },
   "plugins": [
     {
-      "name": "superpowers-override",
+      "name": "overrides",
       "description": "Personal skill overlay — private additions and modifications to superpowers",
-      "source": "./plugins/superpowers-override"
+      "source": "./plugins/overrides"
     }
   ]
 }
