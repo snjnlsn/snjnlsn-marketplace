@@ -9,7 +9,11 @@ Personal Claude Code plugin that customizes and hooks into other Claude Code plu
 | `agents/code-reviewer.md` | `feature-dev:code-reviewer` | Adds Serena MCP tools + Serena-first system-prompt instruction |
 | `agents/code-explorer.md` | `feature-dev:code-explorer` | Adds Serena MCP tools + Serena-first system-prompt instruction |
 | `agents/code-architect.md` | `feature-dev:code-architect` | Adds Serena MCP tools + Serena-first system-prompt instruction |
-| `skills/use-serena-agents/` | *standalone* | Routes code-work subagent dispatches to the Serena-enabled variants above |
+| `skills/using-overrides/` | *standalone* | Routing skill — instructs Claude to prefer any `overrides:` skill/agent over its upstream same-name counterpart, and ensures dispatched `Agent` prompts carry an explicit Serena activation line |
+| `skills/systematic-debugging/` | `superpowers:systematic-debugging` | Adds Serena-first guidance to *Trace Data Flow* (`find_referencing_symbols` for backward tracing) and *Find Working Examples* (`get_symbols_overview` / `find_symbol`) |
+| `skills/receiving-code-review/` | `superpowers:receiving-code-review` | Rewrites the YAGNI "grep codebase for usage" check to route symbol lookups through Serena's `find_referencing_symbols` |
+| `skills/writing-plans/` | `superpowers:writing-plans` | Adds a Serena-first block to *File Structure* covering `get_symbols_overview`, `find_symbol`, and `find_referencing_symbols` for inventorying existing code when planning |
+| `skills/brainstorming/` | `superpowers:brainstorming` | Adds a Serena-first bullet to *Working in existing codebases* so design exploration uses symbolic tools over `Read`/`Grep` |
 | `skills/hello-overrides/` | *standalone* | Smoke test — confirms the plugin is loaded |
 
 Empty directories (`hooks/`, `commands/`) are kept as `.gitkeep` placeholders for future additions.
