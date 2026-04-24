@@ -9,6 +9,11 @@
       "name": "overrides",
       "description": "Personal plugin overrides — customizes and hooks into other Claude Code plugins.",
       "source": "./plugins/overrides"
+    },
+    {
+      "name": "local_conf",
+      "description": "My personal configuration",
+      "source": "./plugins/local_conf"
     }
   ]
 }
