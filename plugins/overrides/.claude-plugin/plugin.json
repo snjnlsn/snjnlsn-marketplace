@@ -1,7 +1,7 @@
 {
   "name": "overrides",
   "description": "Personal plugin overrides — customizes and hooks into other Claude Code plugins.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": {
     "name": "Sanjay Nelson"
   }
