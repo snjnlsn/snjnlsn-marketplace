@@ -9,6 +9,16 @@
             "command": "serena-hooks auto-approve --client=claude-code"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(sed *)",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/sed-guard.sh"
+          }
+        ]
       }
     ],
     "SessionStart": [
