@@ -2,15 +2,6 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "serena-hooks remind --client=claude-code"
-          }
-        ]
-      },
-      {
         "matcher": "mcp__serena__*",
         "hooks": [
           {
