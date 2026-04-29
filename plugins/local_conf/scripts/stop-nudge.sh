@@ -73,11 +73,8 @@ fi
 # Update last-nudge timestamp (best-effort)
 echo "$now_epoch" > "$state_file" 2>/dev/null || true
 
-ctx="If this looks like a wrap-up moment, consider offering to update the handoff (\`session-handoff\` skill) or run a retrospective (\`session-retrospect\` skill). This nudge will not repeat for ${COOLDOWN_MIN} minutes."
+msg="This looks like a wrap-up moment. Consider running /handoff to update the session handoff or /retrospect to reflect on the session. Suppressed for ${COOLDOWN_MIN} minutes."
 
-jq -n --arg ctx "$ctx" '{
-  hookSpecificOutput: {
-    hookEventName: "Stop",
-    additionalContext: $ctx
-  }
+jq -n --arg msg "$msg" '{
+  systemMessage: $msg
 }' 2>/dev/null || true
