@@ -31,13 +31,7 @@ Before defining tasks, map out which files will be created or modified and what 
 - Files that change together should live together. Split by responsibility, not by technical layer.
 - In existing codebases, follow established patterns. If the codebase uses large files, don't unilaterally restructure - but if a file you're modifying has grown unwieldy, including a split in the plan is reasonable.
 
-**Inventorying existing code:** Use Serena's symbolic tools to survey what's already there without reading whole files — they give you a more accurate picture with less context burn:
-
-- `get_symbols_overview` — list the top-level symbols (classes, methods, functions) in a file you plan to touch.
-- `find_symbol` (with `include_body=True` only when needed) — read the body of a specific class/method/function by name path.
-- `find_referencing_symbols` — find every caller of a symbol you're planning to change or replace. Essential for scoping a task accurately (Task 3 edits `Foo.bar` → check now whether 1 caller or 40 callers have to move with it).
-
-Reserve `Read` for non-code files (Markdown, JSON, YAML, configs) and `Grep` for text searches (error messages, log strings, route literals) that don't correspond to a symbol name.
+**Inventorying existing code and dependencies:** Use the MCP toolkit defined in `overrides:using-overrides` — Serena's symbolic tools (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) for in-repo navigation, HexDocs for any Hex package whose API the plan touches, Context7 for non-Hex libraries. `find_referencing_symbols` is especially important for scoping a task accurately (Task 3 edits `Foo.bar` → check now whether 1 caller or 40 callers have to move with it). Reserve `Read`/`Grep` for non-code files and text searches that don't correspond to a symbol name.
 
 This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
 

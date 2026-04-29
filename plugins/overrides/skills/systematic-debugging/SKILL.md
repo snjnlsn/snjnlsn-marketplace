@@ -119,7 +119,7 @@ You MUST complete each phase before proceeding to the next.
    - Keep tracing up until you find the source
    - Fix at source, not at symptom
 
-   **Tool choice for backward tracing:** When the "bad value" flows through named functions, methods, or classes, use Serena's `find_referencing_symbols` to walk up the call graph. It returns symbol-aware callers with snippets — no false hits from comments, strings, or unrelated identifiers that happen to share a name. Reserve `Grep` for when the thing you're chasing is a text fragment (log message, error string, config key), not a symbol.
+   **Tool choice for backward tracing:** Use the MCP toolkit defined in `overrides:using-overrides`. When the "bad value" flows through named functions, methods, or classes, Serena's `find_referencing_symbols` walks up the call graph with symbol-aware accuracy — no false hits from comments, strings, or unrelated identifiers that happen to share a name. If the bad value originates in a dependency, verify the dependency's documented behavior via HexDocs (Hex packages) or Context7 (others) before assuming a bug. Reserve `Grep` for text fragments (log messages, error strings, config keys).
 
 ### Phase 2: Pattern Analysis
 
@@ -128,7 +128,7 @@ You MUST complete each phase before proceeding to the next.
 1. **Find Working Examples**
    - Locate similar working code in same codebase
    - What works that's similar to what's broken?
-   - **Prefer Serena's symbolic tools:** `get_symbols_overview` to map a file's top-level structure, then `find_symbol` with `include_body=True` to read a specific class/method/function by name path. Cheaper and more targeted than reading whole files with `Read`, and won't miss the right method because of a long file. Reserve `Grep`/`Read` for text matches that aren't symbol names.
+   - **Use the MCP toolkit defined in `overrides:using-overrides`** — Serena's `get_symbols_overview` then `find_symbol` (with `include_body=True`) to find and read working implementations symbol-by-symbol; HexDocs/Context7 to confirm what a working dependency call should look like. Reserve `Grep`/`Read` for text matches that aren't symbol names.
 
 2. **Compare Against References**
    - If implementing pattern, read reference implementation COMPLETELY

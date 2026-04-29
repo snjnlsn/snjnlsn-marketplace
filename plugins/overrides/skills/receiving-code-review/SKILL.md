@@ -89,13 +89,15 @@ IF conflicts with your human partner's prior decisions:
 
 ```
 IF reviewer suggests "implementing properly":
-  find actual usage:
-    - If the target is a symbol (function / method / class / exported const):
-        use Serena's `find_referencing_symbols` — it returns real call sites
-        with symbol context, no false positives from comments, strings, or
-        unrelated identifiers.
-    - If the target is a text fragment (log message, route string, config
-        key, HTTP path): use `Grep`.
+  find actual usage using the MCP toolkit (see overrides:using-overrides):
+    - For a symbol (function / method / class / exported const):
+        Serena's `find_referencing_symbols` — real call sites with symbol
+        context, no false positives from comments, strings, or unrelated
+        identifiers.
+    - For a text fragment (log message, route string, config key, HTTP
+        path): `Grep`.
+    - Verifying a dependency's documented API before pushing back: HexDocs
+        (`mcp__hexdocs-mcp__search`) for Hex packages, Context7 for others.
 
   IF unused: "This endpoint isn't called. Remove it (YAGNI)?"
   IF used: Then implement properly
