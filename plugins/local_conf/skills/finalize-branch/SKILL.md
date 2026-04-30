@@ -21,6 +21,35 @@ Activate when the user says:
 
 When handoffs and code disagree, resolve in this order: **code (current) > newest handoff > older handoffs (newer wins among handoffs)**. Code is what actually runs; handoffs are intent.
 
+## Documentation language and tone
+
+Phases 2 and 3 produce written content. Apply these rules to every proposed `@moduledoc`/`@doc`/docstring/JSDoc and every prose edit to `docs/`/`README.md`/`CLAUDE.md`.
+
+**Be clear and concise first.** Documentation earns its space by helping the reader understand the code faster than reading the code itself would. Every word should pull weight. When in doubt, cut.
+
+**Then match the surrounding voice — but don't inherit verbosity.** Before drafting, sample 2–3 nearby docs of the same kind — for inline docs, other `@moduledoc`s/`@doc`s in the same file or sibling modules; for project docs, other entries in the same `docs/` subdirectory or other sections of the same file. Mirror their register where it serves the reader: vocabulary, formality, headings vs. prose, presence/absence of examples.
+
+If existing docs are unnecessarily long, padded, or hedged, **clarity wins over fidelity**. The skill is a chance to incrementally improve docs where the work makes the improvement relevant — when you're editing a function's `@doc` or a paragraph in an architecture doc and the surrounding prose is bloated, tighten it. Don't preserve waste just because it's the local style. (This does *not* license drifting into rewrites of unrelated sections for style — see the per-surface notes.)
+
+**Anti-patterns** — these signal "an LLM wrote this" regardless of project voice. Avoid in every proposal:
+
+- **Marketing adjectives** — "seamless(ly)", "powerful", "robust", "elegant", "blazing", "simply", "easily", "effortless", "comprehensive". Cut them; the claim either survives without the adjective or shouldn't be made.
+- **Narrating the obvious** — "The `Foo` module is a module that handles foo." / "This function takes a user and returns a user." Lead with WHY/WHEN a caller reaches for it, not WHAT it does syntactically; the signature already says what.
+- **Referencing the change/PR/branch** — "As part of this change…", "Recently added…", "This PR introduces…". Docs describe the current state of the code, not the journey to it.
+- **Filler and hedges** — "In order to" → "to"; drop "It should be noted that…", "Please note", "It is important to", "Currently…". (Genuine counter-intuitive caveats are a separate case — flag them when they exist.)
+- **Restating the symbol name** — "`Acme.Users.invite/2` is a function that invites users." The reader already sees the name; spend the sentence on the meaningful part.
+- **Future-tense aspiration** — "This will eventually support…". If it's not implemented, don't document it.
+- **Editorial self-praise** — "This elegant solution…", "An efficient approach…". Let the code earn the adjective.
+
+**Per-surface notes:**
+
+- **`@moduledoc`** — one to three sentences on the module's responsibility and when a caller would reach for it. Skip if the module name plus public function list already make it obvious and no project convention requires one.
+- **`@doc`** — describe the contract: what the function does for the caller, important constraints, non-obvious return shape. Add examples only when they meaningfully clarify; don't pad with doctests.
+- **`@spec`** — propose only when the type is unambiguous. Never invent. (Already stated in Phase 2; restated here for completeness.)
+- **README / architecture docs** — when *updating*, scope edits to the new fact plus any directly adjacent prose that's now misleading, bloated, or padded; tightening is encouraged where it falls in your editing path. Don't drift into rewriting unrelated sections for style — that's a separate cleanup task. When *creating*, sample the existing `docs/` voice but lean toward concise even if local norms run long.
+
+When in doubt, prefer a shorter doc over a longer one. Edits that *reduce* word count without losing information are almost always correct, and incremental tightening of docs you're already editing is part of the job, not a detour.
+
 ## Halt and exit messaging
 
 Every premature exit — pre-flight refusal, branch health failure, mid-phase error, user cancellation, hook failure — must end with a brief summary that names *what's wrong* and *what to do next*. The user should never have to read scrollback to figure out the recovery action. When applied doc edits exist in the working tree at exit time, run the "Cancellation retention" prompt below.
@@ -124,6 +153,8 @@ If new questions arise during resolution (rare), append and run another mini-chu
 
 ## Phase 2 — Inline code documentation
 
+Apply §Documentation language and tone to every proposed `@moduledoc` / `@doc` / docstring / JSDoc.
+
 ### Step 1 — Build the candidate list
 
 From `git diff --name-only <base>..HEAD`, take all source files; skip lockfiles, generated files, fixtures, binary files. For each, identify doc opportunities by reading via Serena's symbol tools (`get_symbols_overview`, then `find_symbol` per top-level symbol):
@@ -169,6 +200,8 @@ Apply approved proposals immediately to the working tree. **Prefer Serena's symb
 After all files walked: "Phase 2 complete: applied N doc changes across M files, skipped K files. Proceed to phase 3?"
 
 ## Phase 3 — Architecture, business-logic, README, CLAUDE.md
+
+Apply §Documentation language and tone to every proposed prose edit. Clarity and concision come first; mirror the established register in `docs/` where it serves the reader, but tighten adjacent prose that's bloated rather than preserving it.
 
 Working surface:
 
