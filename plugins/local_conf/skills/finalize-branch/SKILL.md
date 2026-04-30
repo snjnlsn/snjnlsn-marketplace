@@ -631,6 +631,17 @@ If there are zero applied edits at cancellation time (cancelled before any edits
 - **Cancellation at any approval gate** — covered in "Cancellation retention"; if zero edits applied, exits with a one-line confirmation instead.
 - **Worktrees** — work without modification; operate on `cwd`.
 - **Binary files in diff** — silently skip in inline-code-documentation candidate building.
+- **Callout heading with no body** (just the heading, nothing under it before the next heading) — present in routing as `(empty body)`; recommendation defaults to `dismiss`.
+- **Pattern match inside a fenced code block** — ignored. Pattern matching happens on parsed Markdown headings, not raw text.
+- **Override file present but unparseable** — halt at audit Step 5 entry with the parse error.
+- **Override `destination` points to a missing file** — halt with the recovery hint above (Step 5 configuration).
+- **Same heading text appears as both a callout and an existing heading inside the destination doc** — flagged as `already-captured` candidate with the existing heading's location. User confirms or overrides.
+- **Handoffs but zero matching callouts and zero in-code references** — Steps 5 and 6 are silent; flow is unchanged.
+- **All callouts dismissed or already-captured** — no new proposals from Step 5; final commit footer's `Callouts:` line still records the tallies.
+- **User cancels mid-routing or mid-cleanup** — same cancellation retention behavior as elsewhere. No applied edits exist yet at this point in the flow, so the prompt is the short "no edits to retain" exit.
+- **In-code reference to a handoff that's NOT in the deletion list** (e.g., a comment pointing to a handoff from a previous branch that was kept) — surfaced in Step 6 with recommendation `skip` and an explanatory note. Cleanup is optional.
+- **Callout-identifier reference (`Discovery 4`) where Step 5 didn't extract a matching callout** — surfaced with recommendation `skip` and a "no matching callout in this branch's handoffs" note. The user may still choose `inline` or `remove` if they recognize the reference is now stale.
+- **Source-file reference to a handoff path inside a string literal or path argument** (not a comment/docstring) — surfaced with a "appears to be a real code dependency, not a comment" warning; recommendation defaults to `skip`. The user can still choose other resolutions if they know the code path is dead.
 
 ## Tool usage
 
