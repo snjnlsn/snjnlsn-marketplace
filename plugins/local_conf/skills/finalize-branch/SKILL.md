@@ -347,6 +347,8 @@ If there are zero applied edits at cancellation time (cancelled before any edits
 - **Git operations and `mix`/`npm`/`pytest` runs**: `Bash`.
 - **HexDocs MCP** for Hex package API context if the branch's changes touch a Hex dependency's surface; **Context7 MCP** for non-Hex libraries.
 
+For pattern matching on Markdown headings inside handoffs (audit Step 5): read each handoff with `Read` and parse heading lines with a regex — not Serena (handoffs are non-code) and not `Grep` (the regex needs to inspect document structure, not just match strings). For the source-file reference scan (audit Step 6), `Grep` is appropriate: matches are text-level (substrings inside comments and docstrings), and the regex can express the handoff-path and callout-identifier patterns directly. `Read` captures the surrounding 1–3 lines of context for the per-reference proposal display, and Serena's `replace_symbol_body` (or `Edit` when the comment isn't symbol-attached) applies the approved edit during the inline-code-documentation phase.
+
 ## Spec reference
 
 Full design rationale and decision history: `docs/superpowers/specs/2026-04-30-finalize-branch-skill-design.md`.
