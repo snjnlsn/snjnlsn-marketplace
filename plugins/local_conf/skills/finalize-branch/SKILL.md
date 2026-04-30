@@ -342,7 +342,7 @@ Augment proposal — docs/conventions.md
 
 If the destination doc lacks the configured section heading, the first routed callout's proposal includes the section header plus the new entry as one diff. Subsequent callouts append under the now-existing heading.
 
-Entries land in routing order = Step 5 walk order = chronological order across handoffs (oldest discovery first). Produces a chronological log feel without requiring date prefixes inside the doc.
+Entries land in routing order = Step 5 walk order = chronological order across handoffs (oldest callout first). Produces a chronological log feel without requiring date prefixes inside the doc.
 
 #### Step 5 close-out
 
