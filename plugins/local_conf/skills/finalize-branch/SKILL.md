@@ -180,9 +180,72 @@ Multi-word patterns (`Lesson learned`, `Known issue`, `Edge case`) match literal
 
 Matches require parsed Markdown headings, not raw text — a literal `### Discovery` line inside a fenced code block is ignored. Plain prose mentions ("see Discovery 4") are ignored.
 
-#### Dedup
+#### Smart-merge dedup
 
-Callouts that recur across handoffs are deduped by canonical key: `(first handoff path, normalized heading text)`. Heading text is normalized by lowercasing, collapsing whitespace, and stripping leading numbering (`Discovery N —`). Later handoffs that reference the same heading text are treated as cross-references; only the first appearance becomes a routing item. Renumbering between handoffs is OK — the heading text is the anchor, not the number.
+Callouts that match across (or within) handoffs are detected and resolved via a smart-merge prompt before the per-callout routing walk. This sub-step runs immediately after pattern matching; the per-callout walk then operates on the resolved list.
+
+**Match signals.** A pair of callouts triggers as a match if either of these fires:
+
+- **Heading text match.** Normalized canonical key: lowercase, collapse whitespace, strip leading numbering (`Discovery N —`). The heading text is the anchor, not the number; renumbering between handoffs is OK.
+- **Body substance match.** Semantic judgment — do the two callouts describe the same finding, even with different headings?
+
+**Trigger threshold:**
+
+| Match shape | Behavior |
+|---|---|
+| **True duplicate**: heading matches by canonical normalization AND body matches by string equality after collapsing whitespace runs and trimming leading/trailing whitespace (no semantic judgment) | Silent collapse, first wins (no prompt) |
+| Heading match, body diverges (whitespace-stripped string inequality) | Smart-merge prompt |
+| Body-substance match (semantic judgment), heading diverges | Smart-merge prompt |
+
+**Resolution categories** (used to draft the synthesis):
+
+| Category | When | Drafted action |
+|---|---|---|
+| Redundant | Same finding, no new info | No update drafted; flag and use existing |
+| New info adds detail | Same finding, later one extends earlier | Draft body that folds both |
+| Partially wrong / superseded | Later contradicts or supersedes earlier on a point | Draft replacement body; if heading misframes, propose heading edit |
+| Contradicts | Later overturns earlier's conclusion | Draft body that records the supersession explicitly (preserves original reasoning, states new conclusion) |
+
+**Smart-merge prompt UX:**
+
+```
+Body-substance match detected — Discovery 1 (in handoff A) vs Caveat 2 (in handoff B)
+
+  Handoff A (older), ### Discovery — JWT clock skew tolerance varies by platform:
+  > [body excerpt, first 8-12 lines, "…" if truncated]
+
+  Handoff B (newer), ### Caveat — JWT auth fails near midnight:
+  > [body excerpt, first 8-12 lines, "…" if truncated]
+
+  Resolution category: same finding, new info adds detail.
+
+  Proposed merged routing item (atemporal rewrite already applied):
+
+    ### JWT clock skew tolerance varies by platform
+
+    [synthesized body]
+
+  Choose:
+    m — merge (route the synthesis above; recommended)
+    f — keep first (route Handoff A's version only)
+    l — keep latest (route Handoff B's version only)
+    b — keep both (route as separate items)
+  Or: nuance: <text> to revise the synthesis or push back
+```
+
+Single-letter shortcuts (`m`/`f`/`l`/`b`) avoid collision with the existing routing UX (`a`/`c`/`r`/`d`).
+
+**Atemporal rewrite timing.** The synthesis applies the atemporal-rewrite rules (see "Content transformation for `add-to-repo-docs`" below: strip temporal markers, strip branch/PR refs, keep code/data fences verbatim, promote heading) **before** showing the prompt. So the merged routing item is ready to flow into the routing walk. `f` and `l` route the original heading + body verbatim; atemporal rewrite still applies at routing time as today. Only `m` benefits from the pre-prompt rewrite.
+
+**Transitive clusters.** When 3+ callouts pairwise match (A↔B and B↔C both match), treat them as one cluster with one prompt and one synthesis drawing from all sources. The `f`/`l` shortcuts mean "earliest" and "latest" across the whole cluster; middle versions are dropped if `f` or `l` is picked.
+
+**Cluster-level resolution category** when pairs disagree (e.g., A↔B is "new info adds detail" but A↔C is "contradicts"): use the most severe category found in the cluster (contradicts > superseded > new info > redundant). The synthesis must handle the contradiction explicitly.
+
+**Large clusters (5+ callouts):** display only the first 2-3 source excerpts in the prompt with a `…and N more` indicator to keep the prompt readable. The synthesis still draws from all sources.
+
+**`nuance: <text>`** — user pushes back on the synthesis or proposes a better one. Skill regenerates and re-prompts. Same rhythm as existing `nuance:` patterns elsewhere in Phase 1.
+
+**Output:** a list of merged routing items, each carrying its origin metadata (which handoffs it came from, which match category triggered the merge). The per-callout routing walk in subsequent sub-sections consumes this list as it does today.
 
 #### Configuration
 
