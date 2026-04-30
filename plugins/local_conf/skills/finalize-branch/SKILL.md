@@ -7,7 +7,7 @@ description: Finalize a feature branch before merge — review the branch's hand
 
 Walk a five-phase pipeline that brings inline code docs and project docs current with a feature branch's changes, removes the branch's session handoff documents, and produces one final commit.
 
-The skill is interactive throughout. Each phase has an explicit user approval gate. Phase N+1 cannot begin until phase N is fully approved. State carried between phases lives only in conversation context — cancellation means start over (with optional stash-based resume of applied edits).
+The skill is interactive throughout. Each phase has an explicit user approval gate. A later phase cannot begin until the previous phase is fully approved. State carried between phases lives only in conversation context — cancellation means start over (with optional stash-based resume of applied edits).
 
 ## When to use
 
@@ -23,7 +23,7 @@ When handoffs and code disagree, resolve in this order: **code (current) > newes
 
 ## Documentation language and tone
 
-Phases 2 and 3 produce written content. Apply these rules to every proposed `@moduledoc`/`@doc`/docstring/JSDoc and every prose edit to `docs/`/`README.md`/`CLAUDE.md`.
+The inline-code-documentation and repo-documentation phases produce written content. Apply these rules to every proposed `@moduledoc`/`@doc`/docstring/JSDoc and every prose edit to `docs/`/`README.md`/`CLAUDE.md`.
 
 **Be clear and concise first.** Documentation earns its space by helping the reader understand the code faster than reading the code itself would. Every word should pull weight. When in doubt, cut.
 
@@ -147,7 +147,7 @@ Present questions in chunks of 3–5 at a time. Per-question response options:
 - `change: <text>` — override
 - `skip` — don't act on this in later phases
 
-Anything unaddressed in a chunk defaults to `accept`. The user may add free-form clarifications between chunks. After all chunks are processed, summarize the resolved picture and ask: "Proceed to phase 2?".
+Anything unaddressed in a chunk defaults to `accept`. The user may add free-form clarifications between chunks. After all chunks are processed, summarize the resolved picture. If Steps 5 and 6 will both be silent (no matching callouts and no deletion list), Step 4 prompts: "Proceed to inline code documentation?" Otherwise, Step 4 hands off silently and the gate prompt is owned by whichever of Step 5 or Step 6 runs last.
 
 If new questions arise during resolution (rare), append and run another mini-chunk.
 
@@ -161,7 +161,7 @@ From `git diff --name-only <base>..HEAD`, take all source files; skip lockfiles,
 
 - Modules without `@moduledoc` (Elixir) or top-of-file equivalent
 - Public functions/methods without `@doc` (Elixir) or equivalent
-- Existing `@moduledoc` / `@doc` stale relative to phase 1's resolved picture
+- Existing `@moduledoc` / `@doc` stale relative to the audit phase's resolved picture
 - Missing or misleading `@spec` on public functions — propose only when the type is unambiguous; **never fabricate types where inference is unclear**
 - Non-Elixir equivalents: Python docstrings, Rust `///` doc comments, JS/TS JSDoc on exported symbols
 
@@ -193,11 +193,11 @@ When the user nuances a proposal: revise in place, re-show just the revised prop
 
 ### Step 4 — Apply approved changes
 
-Apply approved proposals immediately to the working tree. **Prefer Serena's symbolic edits** (`replace_symbol_body`, `insert_before_symbol`, `insert_after_symbol`). Use direct `Edit` only for non-symbol-level cases. Don't stage yet — staging happens in phase 4.
+Apply approved proposals immediately to the working tree. **Prefer Serena's symbolic edits** (`replace_symbol_body`, `insert_before_symbol`, `insert_after_symbol`). Use direct `Edit` only for non-symbol-level cases. Don't stage yet — staging happens in the handoff-cleanup phase.
 
 ### Step 5 — Phase gate
 
-After all files walked: "Phase 2 complete: applied N doc changes across M files, skipped K files. Proceed to phase 3?"
+After all files walked: "Inline code documentation complete: applied N doc changes across M files, skipped K files. Proceed to repo documentation?"
 
 ## Phase 3 — Architecture, business-logic, README, CLAUDE.md
 
@@ -207,7 +207,7 @@ Working surface:
 
 - `docs/**` excluding `docs/handoffs/` and `docs/superpowers/**`
 - `README.md` (root)
-- `CLAUDE.md` (root, plus any nested `CLAUDE.md` surfaced by phase 1)
+- `CLAUDE.md` (root, plus any nested `CLAUDE.md` surfaced by the audit phase)
 
 ### Step 1 — Build proposal list (four buckets)
 
@@ -216,38 +216,38 @@ Working surface:
 - **Create** — no existing doc covers a topic this branch introduces, and the topic is significant enough to warrant a new doc. **Always opt-in per file.**
 - **Reorganize** — suggestions to merge overlapping docs (e.g., "`docs/migration.md` and `docs/post-migration.md` cover overlapping ground; merge into `docs/migration.md`?"), move a doc to a more appropriate subdirectory, or split a sprawling doc. Always opt-in. Bounded to docs the branch's changes make relevant — never whole-`docs/` cleanup.
 
-Stale-but-unrelated docs flagged in phase 1 land in **update**, with the original phase-1 question carried forward as context.
+Stale-but-unrelated docs flagged in the audit phase land in **update**, with the original audit-phase question carried forward as context.
 
 ### Doc surface rules
 
-- **`CLAUDE.md`** — conservative; propose additions only when a phase-1 fact would actively mislead future Claude sessions if absent (new convention introduced, previously-documented convention removed, project standard commands changed). Phase 3 close-out includes a one-liner suggestion: "consider running `claude-md-improver` separately for broader auditing."
+- **`CLAUDE.md`** — conservative; propose additions only when an audit-phase fact would actively mislead future Claude sessions if absent (new convention introduced, previously-documented convention removed, project standard commands changed). Repo-documentation close-out includes a one-liner suggestion: "consider running `claude-md-improver` separately for broader auditing."
 - **`README.md`** — propose changes only when the branch touches something README explicitly covers (install steps, usage commands, public API surface visible from README). No editorializing on tone, marketing, or structure.
 - **New file placement** — scan `docs/` for existing subdirectory conventions (e.g. `docs/architecture/`, `docs/business-logic/`) and propose a path that fits. Default `docs/<kebab-topic>.md`. User can `nuance: rename to <path>`.
 
 ### Step 2 — Per-document proposal
 
-Same rhythm as phase 2 but the unit is one document. For **create** proposals, show the proposed file path, a short rationale, and the full proposed body before asking. For **reorganize** proposals, show full file moves and combined diffs and approve individually.
+Same rhythm as the inline-code-documentation phase but the unit is one document. For **create** proposals, show the proposed file path, a short rationale, and the full proposed body before asking. For **reorganize** proposals, show full file moves and combined diffs and approve individually.
 
 ### Step 3 — Application & gate
 
-Approved changes applied immediately. Phase summary: "Updated N docs, augmented M, created K, reorganized L. Skipped P. Proceed to phase 4?"
+Approved changes applied immediately. Phase summary: "Updated N docs, augmented M, created K, reorganized L. Skipped P. Proceed to handoff cleanup & final commit?"
 
 ## Phase 4 — Handoff cleanup & final commit
 
 ### Step 1 — Final review
 
-Top-level summary of everything approved across phases 2 and 3:
+Top-level summary of everything approved across the inline-code and repo-doc phases:
 
 ```
 Pending changes (not yet committed):
-  Phase 2 — Inline code docs: 14 changes across 6 files
-  Phase 3 — Architecture/docs:
+  Inline code docs: 14 changes across 6 files
+  Repo docs:
     Updated:    docs/architecture.md, README.md
     Augmented:  docs/business-logic/users.md
     Created:    docs/architecture/auth-oauth.md
     Reorganized: merged docs/migration.md + docs/post-migration.md
 
-About to delete (phase 4):
+About to delete:
   docs/handoffs/2026-04-15-200312-initial-spike.md
   docs/handoffs/2026-04-18-141022-handle-edge-cases.md
   docs/handoffs/2026-04-22-093041-final-cleanup.md
@@ -257,7 +257,7 @@ Continue? (yes / show diff / cancel)
 
 `show diff` runs `git diff` (uncommitted) plus the list of pending deletes. `cancel` triggers the cancellation retention flow.
 
-If after phases 2 + 3 there are **zero proposals approved** *and* zero handoffs to delete, exit with "Nothing to finalize" — no empty commit.
+If after the inline-code and repo-doc phases there are **zero proposals approved** *and* zero handoffs to delete, exit with "Nothing to finalize" — no empty commit.
 
 ### Step 2 — Delete handoffs
 
@@ -265,7 +265,7 @@ If after phases 2 + 3 there are **zero proposals approved** *and* zero handoffs 
 
 ### Step 3 — Stage everything
 
-`git add` the specific files touched in phases 2 and 3, **by name**. Never `git add -A` / `git add .`. Deletes from step 2 are already staged via `git rm`. If `git status` shows files not produced by the skill, pause: "Detected files in `git status` not produced by this skill: `<list>`. Stage/commit them separately or discard, then continue (`yes` / `cancel`)."
+`git add` the specific files touched in the inline-code and repo-doc phases, **by name**. Never `git add -A` / `git add .`. Deletes from step 2 are already staged via `git rm`. If `git status` shows files not produced by the skill, pause: "Detected files in `git status` not produced by this skill: `<list>`. Stage/commit them separately or discard, then continue (`yes` / `cancel`)."
 
 ### Step 4 — Compose commit message
 
@@ -274,10 +274,10 @@ Template:
 ```
 docs: finalize <branch-name>
 
-Phase 2 (code docs):
+Inline code docs:
   - <terse summary, one bullet per file or grouped by module>
 
-Phase 3 (project docs):
+Repo docs:
   - <terse summary>
 
 Removed <N> session handoff document(s).
@@ -290,7 +290,7 @@ Show the proposed message and ask: `commit` / `edit` / `cancel`. On `edit`, user
 
 ### Step 5 — Commit
 
-`git commit -m "<message>"` via HEREDOC. Per global rules: never `--amend`, never `--no-verify`. On pre-commit hook failure: halt with the hook output and a recovery summary: "Pre-commit hook failed: `<one-line summary of what's failing>`. The doc changes from phases 2/3 are still in your working tree (and staged). I'll offer retention options next so the next run can pick the work back up cleanly; after that, fix the failure and re-run `/finalize-branch`." Then run the cancellation retention prompt — `git stash push` captures both staged and unstaged changes, so a stash here preserves the doc edits and the staged handoff deletions, and the next run re-stages/commits naturally.
+`git commit -m "<message>"` via HEREDOC. Per global rules: never `--amend`, never `--no-verify`. On pre-commit hook failure: halt with the hook output and a recovery summary: "Pre-commit hook failed: `<one-line summary of what's failing>`. The doc changes from the inline-code and repo-doc phases are still in your working tree (and staged). I'll offer retention options next so the next run can pick the work back up cleanly; after that, fix the failure and re-run `/finalize-branch`." Then run the cancellation retention prompt — `git stash push` captures both staged and unstaged changes, so a stash here preserves the doc edits and the staged handoff deletions, and the next run re-stages/commits naturally.
 
 ### Step 6 — Final report
 
@@ -311,7 +311,7 @@ When the user cancels (or the skill halts) **with applied doc edits in the worki
 
 > "Cancelled with `<N>` applied doc edit(s) in the working tree (handoffs were NOT deleted). How should the edits be retained?
 >
->   1. **Stash for resume (recommended)** — saves the edits as a named stash. On the next `/finalize-branch`, phase 0 will offer to apply them automatically.
+>   1. **Stash for resume (recommended)** — saves the edits as a named stash. On the next `/finalize-branch`, resume detection will offer to apply them automatically.
 >   2. **Commit manually** — produces a separate commit on the branch (default message: `WIP: finalize-branch doc updates`). The next `/finalize-branch` run will see them as part of `<base>..HEAD` and re-audit normally; you may end up with both this commit and the final commit on the branch.
 >   3. **Keep in working tree** — leave as-is. The next `/finalize-branch` run will refuse pre-flight until you handle the dirty tree yourself.
 >   4. **Discard** — runs `git restore` on the affected paths and throws the edits away.
@@ -320,25 +320,25 @@ When the user cancels (or the skill halts) **with applied doc edits in the worki
 
 Behavior per choice:
 
-- **1 (stash)** — `git stash push -m "finalize-branch:<branch-name>:<ISO-timestamp>" -- <list of touched paths>`. Confirm: "Stashed N file(s) as `<stash-ref>`. Re-run `/finalize-branch` when ready — phase 0 will detect and offer to apply."
+- **1 (stash)** — `git stash push -m "finalize-branch:<branch-name>:<ISO-timestamp>" -- <list of touched paths>`. Confirm: "Stashed N file(s) as `<stash-ref>`. Re-run `/finalize-branch` when ready — resume detection at the start of the next run will detect and offer to apply."
 - **2 (commit)** — Stage the touched files by name, prompt for message (default editable), commit. Confirm SHA.
 - **3 (keep)** — Exit with: "Edits left in working tree. Re-run will require you to commit, stash, or discard them first."
 - **4 (discard)** — `git restore <touched paths>`. Exit with: "Discarded N applied edit(s)."
 
-If there are zero applied edits at cancellation time (cancelled in phase 0 or phase 1, before any edits were made), skip this prompt — exit with a one-line confirmation.
+If there are zero applied edits at cancellation time (cancelled before any edits were made), skip this prompt — exit with a one-line confirmation.
 
 ## Edge cases
 
-- **Empty branch** (zero commits ahead of base) — refuse at phase 0.
-- **Zero handoffs on the branch** — phase 1 reports and proceeds; context comes from commits/diffs only.
-- **Zero proposals after phases 2 + 3, plus zero handoffs** — exit with "Nothing to finalize" — no empty commit.
+- **Empty branch** (zero commits ahead of base) — refuse at the pre-flight gate.
+- **Zero handoffs on the branch** — the audit phase reports and proceeds; context comes from commits/diffs only.
+- **Zero proposals after the inline-code and repo-doc phases, plus zero handoffs** — exit with "Nothing to finalize" — no empty commit.
 - **Base branch undetectable** — try `main` → `master` → ask the user.
 - **File edit fails mid-phase** (file disappeared, permission) — halt: "Edit failed on `<path>`: `<error>`. Resolve the file issue (e.g., restore the file, fix permissions), then re-run `/finalize-branch`." Then run the cancellation retention prompt for any already-applied edits.
-- **Working tree changes outside the skill mid-flow** — detected at phase 4 staging — pause with: "Detected files in `git status` not produced by this skill: `<list>`. Stage/commit them separately or discard, then continue (`yes` / `cancel`)."
-- **Pre-commit hook failure on final commit** — covered in phase 4 step 5; halts with hook output and runs the cancellation retention prompt.
+- **Working tree changes outside the skill mid-flow** — detected at handoff-cleanup staging — pause with: "Detected files in `git status` not produced by this skill: `<list>`. Stage/commit them separately or discard, then continue (`yes` / `cancel`)."
+- **Pre-commit hook failure on final commit** — covered in the handoff-cleanup phase; halts with hook output and runs the cancellation retention prompt.
 - **Cancellation at any approval gate** — covered in "Cancellation retention"; if zero edits applied, exits with a one-line confirmation instead.
 - **Worktrees** — work without modification; operate on `cwd`.
-- **Binary files in diff** — silently skip in phase 2 candidate building.
+- **Binary files in diff** — silently skip in inline-code-documentation candidate building.
 
 ## Tool usage
 
