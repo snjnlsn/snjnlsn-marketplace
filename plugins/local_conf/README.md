@@ -10,6 +10,7 @@ Personal Claude Code plugin holding hooks, helper scripts, skills, and slash com
 |---|---|
 | `skills/session-handoff/` | Maintains a per-session handoff document under `docs/handoffs/` |
 | `skills/session-retrospect/` | End-of-session reflection — narrative to the handoff, concrete edits applied directly |
+| `skills/finalize-branch/` | End-of-branch pipeline — audits and updates inline code docs and project docs, removes the branch's handoffs, produces one final commit |
 
 ### Slash commands
 
@@ -17,6 +18,7 @@ Personal Claude Code plugin holding hooks, helper scripts, skills, and slash com
 |---|---|
 | `/handoff` | Route to the `session-handoff` skill |
 | `/retrospect` | Route to the `session-retrospect` skill |
+| `/finalize-branch` | Route to the `finalize-branch` skill |
 
 ### Hooks
 
