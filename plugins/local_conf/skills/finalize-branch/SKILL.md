@@ -411,11 +411,14 @@ Entries land in routing order = Step 5 walk order = chronological order across h
 
 ```
 Audit step 5 complete:
+  Callouts after smart-merge: 4 (from 6 raw across 3 handoffs)
   Added to inline code docs:  1 (Acme.Users @moduledoc)
   Added to repo docs:         3 (→ docs/conventions.md)
   Already captured:           1
   Dismissed:                  1
 ```
+
+The `Callouts after smart-merge:` line renders only when at least one merge happened; otherwise it is omitted to keep the close-out clean for the no-merge case.
 
 Step 5 doesn't gate on the user — it transitions straight into Step 6 when there's anything to scan, or skips ahead to the audit-phase close-out gate when there isn't. The user-facing "Proceed to inline code documentation?" prompt is owned by whichever step exits the audit phase last.
 
