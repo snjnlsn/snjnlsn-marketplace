@@ -503,6 +503,8 @@ Working surface:
 
 Stale-but-unrelated docs flagged in the audit phase land in **update**, with the original audit-phase question carried forward as context.
 
+Augment proposals also include any callouts routed to `add-to-repo-docs` in audit Step 5, applied against the resolved destination file and section. They flow through the same per-document approval rhythm and are tagged with their source on display (e.g., `Source callout: Discovery 4 from <handoff filename>`). If the destination doc was bootstrapped (zero-matches flow), it appears in the **Create** bucket and the routed callouts populate it.
+
 ### Doc surface rules
 
 - **`CLAUDE.md`** — conservative; propose additions only when an audit-phase fact would actively mislead future Claude sessions if absent (new convention introduced, previously-documented convention removed, project standard commands changed). Repo-documentation close-out includes a one-liner suggestion: "consider running `claude-md-improver` separately for broader auditing."
