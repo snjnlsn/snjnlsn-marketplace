@@ -571,10 +571,12 @@ Repo docs:
   - <terse summary>
 
 Removed <N> session handoff document(s).
+Callouts: <X> to repo docs, <Y> to inline code docs, <Z> already captured, <W> dismissed.
+In-code references: <I> inlined, <R> redirected, <X> removed, <S> skipped.
 [optional: "(branch health checks skipped)"]
 ```
 
-No `Co-Authored-By` trailer.
+Either of the `Callouts:` / `In-code references:` lines is omitted entirely when its corresponding step had nothing to report (no extracted callouts; no detected references). No `Co-Authored-By` trailer.
 
 Show the proposed message and ask: `commit` / `edit` / `cancel`. On `edit`, user supplies a replacement.
 
