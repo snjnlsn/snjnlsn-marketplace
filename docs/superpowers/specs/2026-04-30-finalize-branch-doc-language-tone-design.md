@@ -29,7 +29,11 @@ Verbatim text to insert:
 >
 > Phases 2 and 3 produce written content. Apply these rules to every proposed `@moduledoc`/`@doc`/docstring/JSDoc and every prose edit to `docs/`/`README.md`/`CLAUDE.md`.
 >
-> **Match the surrounding voice.** Before drafting, sample 2–3 nearby docs of the same kind — for inline docs, other `@moduledoc`s/`@doc`s in the same file or sibling modules; for project docs, other entries in the same `docs/` subdirectory or other sections of the same file. Mirror their register: terseness, sentence length, headings vs. prose, presence/absence of examples. The doc should read as if the same person wrote it.
+> **Be clear and concise first.** Documentation earns its space by helping the reader understand the code faster than reading the code itself would. Every word should pull weight. When in doubt, cut.
+>
+> **Then match the surrounding voice — but don't inherit verbosity.** Before drafting, sample 2–3 nearby docs of the same kind — for inline docs, other `@moduledoc`s/`@doc`s in the same file or sibling modules; for project docs, other entries in the same `docs/` subdirectory or other sections of the same file. Mirror their register where it serves the reader: vocabulary, formality, headings vs. prose, presence/absence of examples.
+>
+> If existing docs are unnecessarily long, padded, or hedged, **clarity wins over fidelity**. The skill is a chance to incrementally improve docs where the work makes the improvement relevant — when you're editing a function's `@doc` or a paragraph in an architecture doc and the surrounding prose is bloated, tighten it. Don't preserve waste just because it's the local style. (This does *not* license drifting into rewrites of unrelated sections for style — see the per-surface notes.)
 >
 > **Anti-patterns** — these signal "an LLM wrote this" regardless of project voice. Avoid in every proposal:
 >
@@ -46,23 +50,24 @@ Verbatim text to insert:
 > - **`@moduledoc`** — one to three sentences on the module's responsibility and when a caller would reach for it. Skip if the module name plus public function list already make it obvious and no project convention requires one.
 > - **`@doc`** — describe the contract: what the function does for the caller, important constraints, non-obvious return shape. Add examples only when they meaningfully clarify; don't pad with doctests.
 > - **`@spec`** — propose only when the type is unambiguous. Never invent. (Already stated in Phase 2; restated here for completeness.)
-> - **README / architecture docs** — when *updating*, change the smallest span of text that addresses the new fact; don't rewrite surrounding paragraphs for style. When *creating*, sample the existing `docs/` voice first.
+> - **README / architecture docs** — when *updating*, scope edits to the new fact plus any directly adjacent prose that's now misleading, bloated, or padded; tightening is encouraged where it falls in your editing path. Don't drift into rewriting unrelated sections for style — that's a separate cleanup task. When *creating*, sample the existing `docs/` voice but lean toward concise even if local norms run long.
 >
-> When in doubt, prefer a shorter doc over a more thorough one. Edits that *reduce* word count without losing information are usually correct.
+> When in doubt, prefer a shorter doc over a longer one. Edits that *reduce* word count without losing information are almost always correct, and incremental tightening of docs you're already editing is part of the job, not a detour.
 
 ### Pointers in each phase
 
 Inserted as the first line of each phase's body, before any sub-heading:
 
 - **Phase 2:** `Apply §Documentation language and tone to every proposed @moduledoc / @doc / docstring / JSDoc.`
-- **Phase 3:** `Apply §Documentation language and tone to every proposed prose edit. The "match the surrounding voice" rule matters most here — docs/ files often have an established register that new prose must fit.`
+- **Phase 3:** `Apply §Documentation language and tone to every proposed prose edit. Clarity and concision come first; mirror the established register in docs/ where it serves the reader, but tighten adjacent prose that's bloated rather than preserving it.`
 
 ### Resolved decisions during brainstorm
 
 - **Scope:** Phase 2 + Phase 3. Phase 4's commit message stays out — it's already template-constrained.
 - **Structure:** Hybrid — one canonical block plus per-phase pointers. (Same pattern as `overrides:using-overrides`.)
-- **Direction:** "Match the surrounding voice" + universal anti-patterns, rather than a fixed prescriptive voice. The skill ships in a marketplace plugin and runs across many projects with different existing styles; pinning a voice would fight some codebases.
-- **`Note that…` exclusion:** Dropped from the filler bullet. Genuine counter-intuitive caveats sometimes need explicit acknowledgment; the "match surrounding voice" rule and "shorter is usually correct" closer keep the use bounded.
+- **Direction:** Clarity-and-concision first, then "match the surrounding voice" without inheriting verbosity, plus a universal anti-pattern list. The skill ships in a marketplace plugin and runs across many projects with different existing styles; pinning a voice would fight some codebases, but blindly preserving local style would lock in waste — so clarity is the tiebreaker.
+- **`Note that…` exclusion:** Dropped from the filler bullet. Genuine counter-intuitive caveats sometimes need explicit acknowledgment; the "be clear and concise" rule and "shorter is usually correct" closer keep the use bounded.
+- **Clarity over fidelity:** When existing docs are unnecessarily long or padded, the skill should tighten them rather than preserve verbose style. Continual improvement of docs in the editing path is part of the job. The constraint is scope — tightening is allowed for prose adjacent to the work, not whole-doc rewrites.
 - **`@spec` duplication:** Phase 2 says "never fabricate types where inference is unclear." This section restates it for completeness in the per-surface notes. Both stay.
 
 ## Files affected
