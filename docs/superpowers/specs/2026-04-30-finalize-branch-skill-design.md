@@ -95,15 +95,15 @@ Look for git stashes left by a prior cancelled finalize-branch run for this bran
 >
 > Apply and resume? (`apply` / `skip` — leave stashed for later / `discard` — drop the stash)"
 
-- `apply` → `git stash apply <stash-ref>` (apply, not pop — don't lose it on merge conflict). On clean apply, drop the stash with `git stash drop <stash-ref>`. Working tree is now dirty with doc edits from the prior run. **The dirty-tree pre-flight check is skipped for this run** — the dirty state is expected and was authored by the user via approvals in the prior run. All other pre-flight checks still apply.
-- `skip` → continue with normal pre-flight (which will refuse if working tree is dirty for any reason, including this stash if the user pops it themselves later).
+- `apply` → **Pre-stash dirty check.** Before applying, run `git status --porcelain` on the current working tree. If it is non-empty, refuse: "Working tree has uncommitted changes unrelated to the resume stash. Commit, stash separately, or discard them with `git stash` / `git restore`, then re-run `/finalize-branch`. The finalize-branch resume stash is preserved." This guarantees that any post-apply dirtiness is *exactly* the stash contents and nothing else. On clean tree: `git stash apply <stash-ref>`. If apply succeeds without conflict, drop the stash with `git stash drop <stash-ref>` and proceed. If apply produces a merge conflict (e.g., the branch's code moved since the stash was created): abort the apply, leave the stash intact, and refuse with: "Resume stash conflicts with current branch state at `<paths>`. The stash is preserved; resolve by manually applying with `git stash apply <stash-ref>` and reconciling conflicts, then re-run." After a clean apply, the working tree is dirty *only* with the stash contents — proceed to step 2 (pre-flight). The dirty-tree check in step 2 is **bypassed for this run only**, since the dirtiness has already been validated as exactly the user-authored stash.
+- `skip` → continue with normal pre-flight (which will refuse if the working tree is dirty for any reason).
 - `discard` → `git stash drop <stash-ref>`, then continue with normal pre-flight.
 
 If multiple matching stashes exist (rare — usually means cancellations across multiple sessions), the skill lists all and prompts the user to pick which one to apply (or `apply all` / `discard all`).
 
 **Step 2 — Pre-flight (refuses to start).** Every refusal includes both *what's wrong* and *what to do next*:
 
-1. `git status --porcelain` non-empty → refuse: "Working tree has uncommitted changes. Commit, stash, or discard them with `git stash` / `git restore`, then re-run `/finalize-branch`." **Skipped** if step 1 just applied a finalize-branch resume stash — the dirty state is expected.
+1. `git status --porcelain` non-empty → refuse: "Working tree has uncommitted changes. Commit, stash, or discard them with `git stash` / `git restore`, then re-run `/finalize-branch`." **Bypassed** if step 1 successfully applied a resume stash on a previously-clean tree — the dirty state is then known to be exactly the stash contents (step 1 enforces a pre-stash dirty check, so this bypass cannot mask unrelated changes). Any other ordering keeps this check active.
 2. Detect base branch via `git symbolic-ref refs/remotes/origin/HEAD`. Fallback chain: `main` → `master` → ask the user. If `git rev-list --count <base>..HEAD` is `0` → refuse: "No commits ahead of `<base>`. Nothing to finalize. Make at least one commit on a feature branch first, or switch to the branch you intended."
 3. If the current branch *is* the base branch (e.g. `main` with commits ahead of `origin/main`): allow, but advocate first:
    > "You're finalizing directly on `main`. For most work, branching this off (`git switch -c <feature>`) and merging via PR gives you isolation, code review, and a cleaner history. Continue on `main` anyway? (y/N)"
@@ -371,7 +371,8 @@ If there are zero applied edits at cancellation time (cancelled in phase 0 or ph
 | Pre-commit hook failure on final commit | Halt with hook output and a one-line failure summary; instruct user to fix and re-run. Offer the cancellation retention prompt — `git stash push` captures both staged and unstaged changes, so a stash here preserves the doc edits *and* the staged handoff deletions, and the next run re-stages/commits naturally. |
 | Cancellation at any approval gate | Run the "Cancellation retention" prompt (stash / commit / keep / discard). Re-run restarts from phase 0; if stashed, phase 0 detects and offers to apply. |
 | Cancellation with zero applied edits | Skip the retention prompt; exit with a one-line confirmation. |
-| Resume stash exists at re-invocation | Phase 0 step 1 offers `apply` / `skip` / `discard` before pre-flight. On `apply`, the dirty-tree pre-flight check is skipped for that run. |
+| Resume stash exists at re-invocation | Phase 0 step 1 offers `apply` / `skip` / `discard` before pre-flight. On `apply`, the working tree must be clean *before* applying — unrelated dirty changes are refused with the stash preserved. After a clean apply, the dirty-tree pre-flight check is bypassed since the dirtiness is now exactly the stash contents. |
+| Resume stash conflicts with current branch state on apply | Abort the apply, preserve the stash, refuse with the conflicting paths and instructions to apply manually and reconcile. |
 | Worktrees | Works without modification — operates on `cwd`. |
 | Binary files in diff | Silently skipped in phase 2 candidate building. |
 
