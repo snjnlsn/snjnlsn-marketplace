@@ -20,6 +20,16 @@ A dedicated skill with a `description` tuned to callout *events* (explicit phras
 
 Otherwise, default to "callout." The user may also override the convention explicitly (e.g., "always say discovery in this session").
 
+### Cross-skill consistency
+
+The convention applies across all callout-touching skills: `handle-callouts` (new), `session-handoff`, `finalize-branch`, and `session-retrospect`. A scan of existing skills shows they're largely already conformant — keyword uses fall into one of the allowed categories above (literal pattern-set listings, heading examples, target-doc filename/section conventions in `finalize-branch`, or discoverability listings such as `session-handoff` line 99's `## Callouts: discoveries, decisions, caveats` section header).
+
+Implementation includes a brief audit pass that:
+
+- Replaces prose uses of a single keyword where "callout" is the standard term. Identified by scan: `finalize-branch` line 345, "oldest discovery first" → "oldest callout first."
+- Leaves keyword-set listings, heading examples, target-doc section names (`## Discoveries`, etc.), and override-file shapes unchanged — these are domain conventions or literal patterns, not prose.
+- Leaves keyword enumerations that aid discoverability (e.g., `session-handoff` line 99 section header, line 279 full type list before "→ a callout heading") unchanged.
+
 ## Scope and lifecycle position
 
 | Skill | Concern |
