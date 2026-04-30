@@ -528,9 +528,10 @@ Top-level summary of everything approved across the inline-code and repo-doc pha
 ```
 Pending changes (not yet committed):
   Inline code docs: 14 changes across 6 files
+                    (1 from a callout, 7 from in-code reference cleanup)
   Repo docs:
     Updated:    docs/architecture.md, README.md
-    Augmented:  docs/business-logic/users.md
+    Augmented:  docs/conventions.md (3 from callouts), docs/business-logic/users.md
     Created:    docs/architecture/auth-oauth.md
     Reorganized: merged docs/migration.md + docs/post-migration.md
 
@@ -545,6 +546,8 @@ Continue? (yes / show diff / cancel)
 `show diff` runs `git diff` (uncommitted) plus the list of pending deletes. `cancel` triggers the cancellation retention flow.
 
 If after the inline-code and repo-doc phases there are **zero proposals approved** *and* zero handoffs to delete, exit with "Nothing to finalize" — no empty commit.
+
+**Defensive halts before deletion.** A handoff cannot be deleted if (a) audit Step 5 extracted a callout from it that has no recorded routing decision, or (b) any source file still contains a reference to its path that wasn't resolved as `inline`, `redirect`, or `remove` (a recorded `skip` does not block — the user explicitly chose to leave the dangle). Under normal flow neither check fires; they exist so future audit-phase changes can't silently drop callouts or references. On a fired halt, exit with the relevant recovery hint: "Re-run and resolve at audit step 5" or "Re-run and resolve at audit step 6".
 
 ### Step 2 — Delete handoffs
 
