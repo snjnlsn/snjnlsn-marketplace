@@ -450,6 +450,8 @@ From `git diff --name-only <base>..HEAD`, take all source files; skip lockfiles,
 
 **Do NOT touch private/internal function docs unless they already exist and are now stale.**
 
+The candidate list also includes any callout-sourced proposals routed to `add-to-inline-code` in audit Step 5 and any in-code reference-cleanup proposals from audit Step 6. These flow through the same per-file walk as diff-sourced proposals and are tagged with their source on display (e.g., `[from callout: Discovery 4 in <handoff filename>]` or `[from in-code reference cleanup: <path>:<line>]`).
+
 ### Step 2 — Per-file proposal
 
 Default unit of work: one file at a time. For larger branches with many files, batch into chunks of ~3–5 files. For each file, present:
