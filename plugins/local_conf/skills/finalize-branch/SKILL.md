@@ -358,6 +358,82 @@ Step 5 doesn't gate on the user — it transitions straight into Step 6 when the
 
 The contract: every extracted callout has an explicit routing decision before the audit phase exits. The handoff-cleanup phase carries a defensive halt that fires if conversation state ever reaches deletion with an unrouted callout.
 
+### Step 6 — In-code reference cleanup
+
+Runs immediately after Step 5 whenever the deletion list is non-empty or Step 5 found callouts; otherwise silent. Scans source files for comments and docstrings that reference handoffs or callouts and proposes a resolution for each, so no comment in the merged tree points to a deleted handoff or to a callout identifier without a definition.
+
+#### Scope of the scan
+
+Source files only. Walk every file the project's language conventions treat as a source file (matched by extension: `.ex`/`.exs` for Elixir, `.js`/`.jsx`/`.ts`/`.tsx` for JS/TS, `.py` for Python, `.rs` for Rust, etc.). Generated files, lockfiles, fixtures, and binary files are skipped using the same exclusion list the inline-code-documentation phase already uses.
+
+The scan covers the **whole repo**, not just files in the branch's diff. References usually arrive with the handoff, but the cost of a full-repo regex scan is low and the cost of a missed dangling reference is high.
+
+Detection is text-level — read each file with `Read` (or scan with `Grep` for the regex match list first), match a small set of regexes. Symbol-level navigation isn't useful inside comment bodies.
+
+#### What counts as a reference
+
+Two pattern families:
+
+- **Handoff path references** — a literal substring matching `docs/handoffs/<filename>` (or the equivalent path discovered from the deletion list, if the project's handoffs live elsewhere). Matches inside comments and docstrings are routed normally; matches inside string literals or path arguments are flagged with a "is this a real code dependency? skip if so" prompt.
+- **Callout-identifier references** — a sequence matching `(<pattern>) ?\d+` (e.g., `Discovery 4`, `Decision 12`) inside comments and docstrings, where `<pattern>` is one of the configured callout patterns. Only meaningful when Step 5 extracted a callout with the same identifier; references to identifiers that don't exist in any handoff are noted but typically dismissed.
+
+Each match is reported with file path, line number, and the surrounding 1–3 lines of comment context.
+
+#### Resolution choices per reference
+
+Each match becomes a tracked **inline-code-doc proposal** that the user resolves during the inline-code-documentation phase walk. Per-reference choices:
+
+- **`inline`** — extract the relevant content and rewrite the comment so the fact is present in the code itself. Best for short, terse references where the original handoff text is a sentence or two. Draft the inlined replacement using the same atemporal-rewrite rules as `add-to-repo-docs` (no session-voice, no branch references) and present the diff for `approve / nuance / skip`.
+- **`redirect`** — replace the reference with a pointer to the destination doc + section. Format: `# see <destination-path> "<section>" — <topic title>` (or the language's idiomatic comment style). Available only when the referenced callout was routed to `add-to-repo-docs` in Step 5; the skill knows the destination path and the rewritten title from that routing decision.
+- **`remove`** — delete the reference. Use when the comment carried the reference as supporting context but the surrounding text is self-contained without it.
+- **`skip`** — leave the reference as-is. Use sparingly; the skill warns at the close of Step 6 that any skipped reference will dangle once handoffs are deleted, and asks for explicit confirmation.
+
+**Recommendation per match:**
+
+- If the referenced callout was routed to `add-to-repo-docs` in Step 5 → recommend `redirect` (preserves the link, fixes the dangling path).
+- If the referenced callout was routed to `add-to-inline-code` and the matched comment is on or near that symbol → recommend `inline` (the routed proposal will already cover the same ground).
+- If the referenced callout was `dismissed` or `already-captured` → recommend `remove` (the original reference is now noise).
+- If the reference is to a path/identifier with no Step 5 match (and the path isn't in the deletion list) → recommend `skip` (nothing to clean up).
+
+#### Per-reference proposal display
+
+```
+In-code reference — lib/<path>.ex:42
+
+  Source comment context:
+    │ # See docs/handoffs/<filename>.md for the rationale —
+    │ # specifically Discovery 4.
+    │ defp build_request(...) do
+
+  Proposed resolution: redirect
+  Reason: Discovery 4 was routed to docs/conventions.md → ## Discoveries.
+
+  ┌─ Proposed comment ──────────────────────────────────────────────
+  │ # See docs/conventions.md "## Discoveries" —
+  │ # <rewritten callout title>.
+  └─────────────────────────────────────────────────────────────────
+
+  Approve (a) / change resolution (i / r / x / s) / nuance: <text>
+```
+
+Resolution-change shortcuts: `i`=inline, `r`=redirect, `x`=remove, `s`=skip. On a change, re-draft the proposed comment for the new resolution and re-prompt.
+
+#### Step 6 close-out
+
+```
+Audit step 6 complete:
+  References resolved by inlining:    2
+  References resolved by redirect:    4
+  References removed:                 1
+  References skipped (will dangle):   0
+
+Proceed to inline code documentation?
+```
+
+If any references were skipped, append: "Note: <N> reference(s) will dangle in the merged tree. Re-run if you want to revisit this."
+
+The contract: every detected in-code reference has an explicit resolution (`inline`, `redirect`, `remove`, or `skip`) before the audit phase exits. A `skip` is recorded as an explicit user choice to leave the dangle, and does not block deletion — the close-out warning is the only signal. The handoff-cleanup phase carries a defensive halt that fires if conversation state ever reaches deletion with an unresolved reference (no `skip` recorded).
+
 ## Phase 2 — Inline code documentation
 
 Apply §Documentation language and tone to every proposed `@moduledoc` / `@doc` / docstring / JSDoc.
