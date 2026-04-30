@@ -7,7 +7,7 @@ Personal Claude Code plugin marketplace for me.
 | Plugin | Purpose |
 |---|---|
 | [`overrides`](plugins/overrides/) | Overlays upstream Claude Code plugins — Serena-enabled overrides of `feature-dev` and `superpowers` agents/skills, plus a routing skill that prefers the Serena-enabled variants. |
-| [`local_conf`](plugins/local_conf/) | Personal hooks, helper scripts, skills, and slash commands. Includes session-handoff and session-retrospect skills, Serena auto-approval, in-place sed guard, and end-of-session wrap-up nudge. |
+| [`local_conf`](plugins/local_conf/) | Personal hooks, helper scripts, skills, and slash commands. Includes session-handoff, session-retrospect, and finalize-branch skills, Serena auto-approval, in-place sed guard, and end-of-session wrap-up nudge. |
 
 ## Install
 
