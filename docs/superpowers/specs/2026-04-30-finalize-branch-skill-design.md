@@ -102,7 +102,8 @@ The skill scans for a project-defined pre-commit alias or pipeline, in this orde
 2. `package.json` scripts — look for `precommit`, `check`, `verify`, `lint && test`
 3. `Makefile` targets — `make check`, `make precommit`, `make verify`
 4. `CLAUDE.md` for project-specific "before committing" / "pre-commit" guidance
-5. Language-default fallbacks:
+5. `README.md` for project-specific guidance — typically in "Development", "Contributing", "Testing", or "Getting started" sections; look for documented commands tied to "before committing", "pre-commit", "checks", "verify", "test"
+6. Language-default fallbacks:
    - Elixir: `mix format --check-formatted && mix compile --warnings-as-errors && mix test`
    - JS/TS: `npm test`
    - Python: `pytest`
