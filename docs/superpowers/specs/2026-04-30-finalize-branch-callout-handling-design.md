@@ -71,17 +71,24 @@ A callout is a Markdown heading at level `###` or deeper whose text matches:
 ^(<pattern>)(?:\s+\d+)?(?:\s*[—\-:]\s*.*)?$
 ```
 
-…where `<pattern>` is one of the configured callout patterns. Default pattern set:
+…where `<pattern>` is one of the configured callout patterns. Each pattern is a literal heading-prefix string; singular and plural forms are listed as separate entries so that handoffs using either form match. Default pattern set:
 
-- `Discovery`
-- `Decision`
-- `Caveat`
-- `Gotcha`
-- `Lesson learned`
+- `Discovery` / `Discoveries`
+- `Decision` / `Decisions`
+- `Caveat` / `Caveats`
+- `Gotcha` / `Gotchas`
+- `Lesson learned` / `Lessons learned`
+- `Known issue` / `Known issues`
+- `Complexity` / `Complexities`
+- `Edge case` / `Edge cases`
+
+The slash form is shorthand — each line above expands to two entries in the matcher's literal-pattern list (e.g., `Discovery` and `Discoveries` are both matched independently).
 
 Matches require parsed Markdown headings, not raw text. A literal `### Discovery` line inside a fenced code block is ignored. Plain prose mentions ("see Discovery 4") are ignored — only headings count.
 
-Pattern matching is case-insensitive on the pattern keyword. Numbering after the keyword is optional and not anchored to any sequence — `### Discovery — title`, `### Discovery 1 — title`, and `#### Decision: title` all match.
+Pattern matching is case-insensitive on the pattern keyword. Numbering after the keyword is optional and not anchored to any sequence — `### Discovery — title`, `### Discovery 1 — title`, `#### Decision: title`, and `### Edge cases — empty input` all match. A heading like `### Known issues` with no trailing dash, colon, or content is also a valid match (the body of the section is the callout content).
+
+Multi-word patterns (`Lesson learned`, `Known issue`, `Edge case`) match literally as space-separated tokens at the heading-text start; the matcher does not collapse internal whitespace.
 
 ### Dedup
 
@@ -133,7 +140,7 @@ JSON form:
 }
 ```
 
-Only `destination` is required in the override. `section` defaults to `## Discoveries` (created if missing). `patterns` defaults to the built-in set. Override file beats convention scan in all cases.
+Only `destination` is required in the override. `section` defaults to `## Discoveries` (created if missing). `patterns` defaults to the built-in set; when overriding `patterns`, list each form the project uses literally — singular and plural variants must each be specified (e.g., `["Discovery", "Discoveries"]`) since no auto-pluralization is applied to override values. Override file beats convention scan in all cases.
 
 If the override's `destination` points to a file that doesn't exist, the skill halts with a recovery hint: "Override points to `<path>` which doesn't exist. Create the file or fix the override." No silent fallback to convention.
 
