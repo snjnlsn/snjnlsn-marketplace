@@ -10,6 +10,16 @@
 
 A dedicated skill with a `description` tuned to callout *events* (explicit phrases or implicit recognition) closes the gap.
 
+## Terminology
+
+**Callout** is the standard term — for the category as a whole, for individual instances when the type isn't named, and for skill/section/variable names. The eight keywords (Discovery, Decision, Caveat, Gotcha, Lesson learned, Known issue, Complexity, Edge case) are *types of callout*. They appear in headings (always) and in prose when:
+
+- Mirroring the user's framing — `"save that as a decision"` → `"Saved as ### Decision — …"`.
+- Mirroring surrounding writing that already uses the keyword — an existing handoff body's prose, an existing section name, etc.
+- The specific type is what the prose is about — "the Discovery you saved earlier covers this."
+
+Otherwise, default to "callout." The user may also override the convention explicitly (e.g., "always say discovery in this session").
+
 ## Scope and lifecycle position
 
 | Skill | Concern |
