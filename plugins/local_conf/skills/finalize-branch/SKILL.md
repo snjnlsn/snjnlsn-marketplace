@@ -257,7 +257,7 @@ Show the proposed message and ask: `commit` / `edit` / `cancel`. On `edit`, user
 
 ### Step 5 — Commit
 
-`git commit -m "<message>"` via HEREDOC. Per global rules: never `--amend`, never `--no-verify`. On pre-commit hook failure: halt with the hook output and a recovery summary: "Pre-commit hook failed: `<one-line summary of what's failing>`. The doc changes from phases 2/3 are still in your working tree (and staged). Fix the failure, then re-run `/finalize-branch`." Then run the cancellation retention prompt — `git stash push` captures both staged and unstaged changes, so a stash here preserves the doc edits and the staged handoff deletions, and the next run re-stages/commits naturally.
+`git commit -m "<message>"` via HEREDOC. Per global rules: never `--amend`, never `--no-verify`. On pre-commit hook failure: halt with the hook output and a recovery summary: "Pre-commit hook failed: `<one-line summary of what's failing>`. The doc changes from phases 2/3 are still in your working tree (and staged). I'll offer retention options next so the next run can pick the work back up cleanly; after that, fix the failure and re-run `/finalize-branch`." Then run the cancellation retention prompt — `git stash push` captures both staged and unstaged changes, so a stash here preserves the doc edits and the staged handoff deletions, and the next run re-stages/commits naturally.
 
 ### Step 6 — Final report
 
@@ -302,6 +302,8 @@ If there are zero applied edits at cancellation time (cancelled in phase 0 or ph
 - **Base branch undetectable** — try `main` → `master` → ask the user.
 - **File edit fails mid-phase** (file disappeared, permission) — halt: "Edit failed on `<path>`: `<error>`. Resolve the file issue (e.g., restore the file, fix permissions), then re-run `/finalize-branch`." Then run the cancellation retention prompt for any already-applied edits.
 - **Working tree changes outside the skill mid-flow** — detected at phase 4 staging — pause with: "Detected files in `git status` not produced by this skill: `<list>`. Stage/commit them separately or discard, then continue (`yes` / `cancel`)."
+- **Pre-commit hook failure on final commit** — covered in phase 4 step 5; halts with hook output and runs the cancellation retention prompt.
+- **Cancellation at any approval gate** — covered in "Cancellation retention"; if zero edits applied, exits with a one-line confirmation instead.
 - **Worktrees** — work without modification; operate on `cwd`.
 - **Binary files in diff** — silently skip in phase 2 candidate building.
 
