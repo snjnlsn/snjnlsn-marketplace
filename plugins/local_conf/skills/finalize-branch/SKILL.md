@@ -637,7 +637,7 @@ Repo docs:
   - <terse summary>
 
 Removed <N> session handoff document(s).
-Callouts: <X> to repo docs, <Y> to inline code docs, <Z> already captured, <W> dismissed.
+Callouts: <X> to repo docs, <Y> to inline code docs, <Z> already captured, <W> dismissed[, <M> smart-merged].
 In-code references: <I> inlined, <R> redirected, <X> removed, <S> skipped.
 [optional: "(branch health checks skipped)"]
 ```
