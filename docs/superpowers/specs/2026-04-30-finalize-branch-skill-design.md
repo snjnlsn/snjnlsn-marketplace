@@ -82,13 +82,28 @@ State carried forward in conversation context:
 
 If the user cancels mid-flow or the skill halts on error, conversation context is the only memory; re-invoking starts over from phase 0.
 
-**Halt and exit messaging.** Every path that exits the skill prematurely — pre-flight refusal, branch health failure, mid-phase error, user cancellation, hook failure — must end with a brief summary that names *what's wrong* and *what to do next*. The user should never have to read scrollback or guess the recovery action. Specific phrasing for each path is in the phase sections below.
+**Halt and exit messaging.** Every path that exits the skill prematurely — pre-flight refusal, branch health failure, mid-phase error, user cancellation, hook failure — must end with a brief summary that names *what's wrong* and *what to do next*. The user should never have to read scrollback or guess the recovery action. When there are *applied doc edits* in the working tree at exit time, the skill additionally offers the retention prompt (see "Cancellation retention" below) so re-runs can pick the work back up cleanly. Specific phrasing for each path is in the phase sections below.
 
-### Phase 0 — Pre-flight gate + branch health checks
+### Phase 0 — Resume detection, pre-flight gate, branch health checks
 
-**Pre-flight (refuses to start).** Every refusal includes both *what's wrong* and *what to do next*:
+**Step 1 — Resume detection (runs first, before pre-flight).**
 
-1. `git status --porcelain` non-empty → refuse: "Working tree has uncommitted changes. Commit, stash, or discard them with `git stash` / `git restore`, then re-run `/finalize-branch`."
+Look for git stashes left by a prior cancelled finalize-branch run for this branch. The skill scans `git stash list` for entries whose message matches `finalize-branch:<current-branch>:`. If one or more matches are found:
+
+> "Found N pending finalize-branch stash(es) for branch `<branch>`:
+>   - `<stash-ref>` (created `<ISO-timestamp>`, N files)
+>
+> Apply and resume? (`apply` / `skip` — leave stashed for later / `discard` — drop the stash)"
+
+- `apply` → `git stash apply <stash-ref>` (apply, not pop — don't lose it on merge conflict). On clean apply, drop the stash with `git stash drop <stash-ref>`. Working tree is now dirty with doc edits from the prior run. **The dirty-tree pre-flight check is skipped for this run** — the dirty state is expected and was authored by the user via approvals in the prior run. All other pre-flight checks still apply.
+- `skip` → continue with normal pre-flight (which will refuse if working tree is dirty for any reason, including this stash if the user pops it themselves later).
+- `discard` → `git stash drop <stash-ref>`, then continue with normal pre-flight.
+
+If multiple matching stashes exist (rare — usually means cancellations across multiple sessions), the skill lists all and prompts the user to pick which one to apply (or `apply all` / `discard all`).
+
+**Step 2 — Pre-flight (refuses to start).** Every refusal includes both *what's wrong* and *what to do next*:
+
+1. `git status --porcelain` non-empty → refuse: "Working tree has uncommitted changes. Commit, stash, or discard them with `git stash` / `git restore`, then re-run `/finalize-branch`." **Skipped** if step 1 just applied a finalize-branch resume stash — the dirty state is expected.
 2. Detect base branch via `git symbolic-ref refs/remotes/origin/HEAD`. Fallback chain: `main` → `master` → ask the user. If `git rev-list --count <base>..HEAD` is `0` → refuse: "No commits ahead of `<base>`. Nothing to finalize. Make at least one commit on a feature branch first, or switch to the branch you intended."
 3. If the current branch *is* the base branch (e.g. `main` with commits ahead of `origin/main`): allow, but advocate first:
    > "You're finalizing directly on `main`. For most work, branching this off (`git switch -c <feature>`) and merging via PR gives you isolation, code review, and a cleaner history. Continue on `main` anyway? (y/N)"
@@ -270,7 +285,7 @@ About to delete (phase 4):
 Continue? (yes / show diff / cancel)
 ```
 
-`show diff` runs `git diff` (uncommitted) plus the list of pending deletes. `cancel` aborts the skill — working tree changes from phases 2/3 stay in place; nothing is rolled back. Skill prints: "Cancelled. Working tree contains <N> applied doc edits from phases 2/3 (handoffs were NOT deleted). To discard everything: `git restore .`. To keep these edits as a separate commit: stage and commit them manually. To resume finalize: re-run `/finalize-branch` (this restarts from phase 0; prior approvals are not preserved)."
+`show diff` runs `git diff` (uncommitted) plus the list of pending deletes. `cancel` aborts the skill — but before exiting, the skill offers retention options for the applied doc edits (see "Cancellation retention" below).
 
 If after phases 2 and 3 there are **zero proposals approved** *and* zero handoffs to delete, the skill exits with "Nothing to finalize" rather than producing an empty commit.
 
@@ -320,6 +335,28 @@ Next: push and open a PR (or merge if appropriate).
 
 Skill exits.
 
+### Cancellation retention
+
+Whenever the user cancels at an approval gate (or the skill halts mid-phase) **with applied doc edits already in the working tree**, the skill prompts before exiting:
+
+> "Cancelled with `<N>` applied doc edit(s) in the working tree (handoffs were NOT deleted). How should the edits be retained?
+>
+>   1. **Stash for resume (recommended)** — saves the edits as a named stash. On the next `/finalize-branch`, phase 0 will offer to apply them automatically.
+>   2. **Commit manually** — produces a separate commit on the branch (default message: `WIP: finalize-branch doc updates`). The next `/finalize-branch` run will see them as part of `<base>..HEAD` and re-audit normally; you may end up with both this commit and the final commit on the branch.
+>   3. **Keep in working tree** — leave as-is. The next `/finalize-branch` run will refuse pre-flight until you handle the dirty tree yourself.
+>   4. **Discard** — runs `git restore` on the affected paths and throws the edits away.
+>
+> Choice? (`1`/`2`/`3`/`4`)"
+
+Behavior per choice:
+
+- **1 (stash)** — `git stash push -m "finalize-branch:<branch-name>:<ISO-timestamp>" -- <list of touched paths>`. Working tree returns to clean. Skill exits with a confirmation: "Stashed N file(s) as `<stash-ref>`. Re-run `/finalize-branch` when ready — phase 0 will detect and offer to apply."
+- **2 (commit)** — Stage the touched files by name, prompt for message (default provided, editable), commit. Skill exits confirming the commit SHA.
+- **3 (keep)** — Skill exits with: "Edits left in working tree. Re-run will require you to commit, stash, or discard them first."
+- **4 (discard)** — `git restore <touched paths>`. Skill exits with: "Discarded N applied edit(s)."
+
+If there are zero applied edits at cancellation time (cancelled in phase 0 or phase 1, before any edits were made), this prompt is skipped — the skill just exits with a one-line confirmation.
+
 ### Error handling & edge cases
 
 | Situation | Behavior |
@@ -329,10 +366,12 @@ Skill exits.
 | Zero proposals after phases 2 + 3, plus zero handoffs | Exit with "Nothing to finalize" — no empty commit. |
 | Base branch undetectable | Try `main` → `master` → ask the user. |
 | Detached HEAD / mid-rebase / mid-merge | Refuse at phase 0. |
-| File edit fails mid-phase (disappeared, permission) | Halt phase with: "Edit failed on `<path>`: `<error>`. Resolve the file issue (e.g., restore the file, fix permissions), then re-run `/finalize-branch`. Already-applied edits remain in the working tree." |
+| File edit fails mid-phase (disappeared, permission) | Halt phase with: "Edit failed on `<path>`: `<error>`. Resolve the file issue (e.g., restore the file, fix permissions), then re-run `/finalize-branch`." Then run the cancellation retention prompt for any already-applied edits. |
 | Working tree changes outside the skill mid-flow | Detected at phase 4 staging — pause with: "Detected files in `git status` not produced by this skill: `<list>`. Stage/commit them separately or discard, then continue (`yes` / `cancel`)." |
-| Pre-commit hook failure on final commit | Halt with hook output and a one-line failure summary; instruct user to fix and re-run `/finalize-branch`. |
-| Cancellation at any approval gate | Exit with summary naming applied edits, the recovery options (`git restore .`, manual commit, re-run), and that re-run restarts from phase 0. |
+| Pre-commit hook failure on final commit | Halt with hook output and a one-line failure summary; instruct user to fix and re-run. Offer the cancellation retention prompt — `git stash push` captures both staged and unstaged changes, so a stash here preserves the doc edits *and* the staged handoff deletions, and the next run re-stages/commits naturally. |
+| Cancellation at any approval gate | Run the "Cancellation retention" prompt (stash / commit / keep / discard). Re-run restarts from phase 0; if stashed, phase 0 detects and offers to apply. |
+| Cancellation with zero applied edits | Skip the retention prompt; exit with a one-line confirmation. |
+| Resume stash exists at re-invocation | Phase 0 step 1 offers `apply` / `skip` / `discard` before pre-flight. On `apply`, the dirty-tree pre-flight check is skipped for that run. |
 | Worktrees | Works without modification — operates on `cwd`. |
 | Binary files in diff | Silently skipped in phase 2 candidate building. |
 
