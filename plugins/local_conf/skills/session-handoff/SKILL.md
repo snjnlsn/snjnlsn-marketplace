@@ -96,6 +96,48 @@ Handoffs are read by future Claude sessions to resume work without re-deriving c
 
 When in doubt, prefer a shorter handoff over a longer one. Edits that *reduce* word count without losing information are almost always correct.
 
+## Callouts: discoveries, decisions, caveats
+
+When the session produces a finding worth surfacing across sessions or sending to a permanent home (project doc, inline `@doc`), record it as a **callout heading** — not a bullet. The `finalize-branch` skill harvests these at branch end and routes them to inline code docs or project docs; bullets in `## Work done` are not harvested.
+
+### Format
+
+A callout is a Markdown heading at any level (typically `###`) whose first words match one of the supported keywords (case-insensitive), optionally followed by a number, then a separator (`—`, `-`, `:`), then a title:
+
+- `Discovery` / `Discoveries`
+- `Decision` / `Decisions`
+- `Caveat` / `Caveats`
+- `Gotcha` / `Gotchas`
+- `Lesson learned` / `Lessons learned`
+- `Known issue` / `Known issues`
+- `Complexity` / `Complexities`
+- `Edge case` / `Edge cases`
+
+These all match:
+
+- `### Discovery — JWT clock skew tolerance varies by platform`
+- `### Discovery 4 — JWT clock skew tolerance varies by platform`
+- `#### Decision: drop legacy session middleware`
+- `### Edge cases — empty input handling`
+- `### Known issues` (bare, no title)
+
+The body is everything under the heading until the next heading. Write it in normal session voice — `finalize-branch` rewrites callout bodies atemporally when routing to a permanent home, so don't pre-strip "during this session" or "we found that".
+
+### Where callouts live in the handoff
+
+Two valid placements; `finalize-branch` harvests both:
+
+- **Inline under an existing section** — e.g., `### Discovery 2 — …` inside `## Work done`. Use when the callout is tied to that section's narrative.
+- **In a dedicated `## Callouts` section** at the top of the body. Use when there are multiple cross-cutting findings.
+
+Do **not** name a parent section with a bare callout keyword (e.g. `## Discoveries`, `## Decisions`, `## Caveats`). Those headings themselves match the callout pattern, so the whole section body would be harvested as a single callout. `## Callouts` is safe — it's not on the keyword list.
+
+### When to write one
+
+When the user says "this is a discovery", "save this as a decision", "that caveat needs to land somewhere", or describes a finding that a future session — or the eventual reader of a project doc — would want without re-deriving it. Proactively recognize callout-worthy moments: a non-obvious behavior just confirmed, a deliberate trade-off, a constraint that surprised the session. Ask before writing if the framing isn't clear.
+
+Title by the *finding*, not the *task* — `### Discovery — JWT clock skew tolerance varies by platform`, not `### Discovery — investigated JWT auth`.
+
 ## Behaviors
 
 On any session-touching invocation, run the migration check first (see `## Migration`). The user's response is honored for the rest of the session.
@@ -234,6 +276,7 @@ When parsing a filename:
 - A description of work completed → "Work done"
 - A TODO, follow-up item, or unresolved question → "Open questions / next steps"
 - A high-level framing or outcome statement → "Summary"
+- A discovery, decision, caveat, gotcha, lesson learned, known issue, complexity, or edge case worth a permanent home → a callout heading (see "Callouts: discoveries, decisions, caveats"), **not** a bullet under "Work done"
 - Retrospective insight (only via `session-retrospect` skill) → "Retrospective"
 
 ## State

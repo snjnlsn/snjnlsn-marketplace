@@ -157,7 +157,7 @@ Runs only if at least one handoff in the confirmed deletion list contains a matc
 
 #### Pattern matching
 
-A callout is a Markdown heading at level `###` or deeper whose text matches:
+A callout is a Markdown heading at any level whose text matches:
 
 ```
 ^(<pattern>)(?:\s+\d+)?(?:\s*[—\-:]\s*.*)?$
@@ -174,7 +174,7 @@ A callout is a Markdown heading at level `###` or deeper whose text matches:
 - `Complexity` / `Complexities`
 - `Edge case` / `Edge cases`
 
-Each "X / Y" entry above expands to two literal patterns in the matcher's list. Pattern matching is case-insensitive on the keyword. Numbering after the keyword is optional and not anchored to any sequence — `### Discovery — title`, `### Discovery 1 — title`, `#### Decision: title`, `### Edge cases — empty input`, and a bare `### Known issues` all match.
+Each "X / Y" entry above expands to two literal patterns in the matcher's list. Pattern matching is case-insensitive on the keyword. Numbering after the keyword is optional and not anchored to any sequence — `## Discoveries`, `### Discovery — title`, `### Discovery 1 — title`, `#### Decision: title`, `### Edge cases — empty input`, and a bare `### Known issues` all match.
 
 Multi-word patterns (`Lesson learned`, `Known issue`, `Edge case`) match literally as space-separated tokens at the heading-text start; internal whitespace is not collapsed.
 
