@@ -82,17 +82,20 @@ State carried forward in conversation context:
 
 If the user cancels mid-flow or the skill halts on error, conversation context is the only memory; re-invoking starts over from phase 0.
 
+**Halt and exit messaging.** Every path that exits the skill prematurely — pre-flight refusal, branch health failure, mid-phase error, user cancellation, hook failure — must end with a brief summary that names *what's wrong* and *what to do next*. The user should never have to read scrollback or guess the recovery action. Specific phrasing for each path is in the phase sections below.
+
 ### Phase 0 — Pre-flight gate + branch health checks
 
-**Pre-flight (refuses to start):**
+**Pre-flight (refuses to start).** Every refusal includes both *what's wrong* and *what to do next*:
 
-1. `git status --porcelain` non-empty → refuse: "Working tree has uncommitted changes. Commit or stash, then re-run."
-2. Detect base branch via `git symbolic-ref refs/remotes/origin/HEAD`. Fallback chain: `main` → `master` → ask the user. If `git rev-list --count <base>..HEAD` is `0` → refuse: "No commits ahead of `<base>`. Nothing to finalize."
+1. `git status --porcelain` non-empty → refuse: "Working tree has uncommitted changes. Commit, stash, or discard them with `git stash` / `git restore`, then re-run `/finalize-branch`."
+2. Detect base branch via `git symbolic-ref refs/remotes/origin/HEAD`. Fallback chain: `main` → `master` → ask the user. If `git rev-list --count <base>..HEAD` is `0` → refuse: "No commits ahead of `<base>`. Nothing to finalize. Make at least one commit on a feature branch first, or switch to the branch you intended."
 3. If the current branch *is* the base branch (e.g. `main` with commits ahead of `origin/main`): allow, but advocate first:
    > "You're finalizing directly on `main`. For most work, branching this off (`git switch -c <feature>`) and merging via PR gives you isolation, code review, and a cleaner history. Continue on `main` anyway? (y/N)"
-   - On `N`, exit. On `y`, proceed.
-4. Detached HEAD → refuse with "Not on a branch." Detected via `git symbolic-ref --quiet HEAD` returning non-zero.
-5. Mid-rebase/merge/cherry-pick → refuse with "A git operation is in progress. Resolve it before finalizing." Detected by checking for the presence of any of: `.git/rebase-merge/`, `.git/rebase-apply/`, `.git/MERGE_HEAD`, `.git/CHERRY_PICK_HEAD`, `.git/REVERT_HEAD`. (The `git status --porcelain` check alone is insufficient — a paused rebase can have an empty porcelain.)
+   - On `N`, exit with: "Exited without finalizing. Recommended: `git switch -c <feature-name>` to move your commits onto a feature branch, then re-run `/finalize-branch` from there."
+   - On `y`, proceed.
+4. Detached HEAD → refuse with: "Not on a branch (detached HEAD). Checkout a branch with `git switch <branch>` or create one with `git switch -c <new-branch>`, then re-run." Detected via `git symbolic-ref --quiet HEAD` returning non-zero.
+5. Mid-rebase/merge/cherry-pick → refuse with: "A git operation is in progress (`<operation-name>`). Resolve or abort it (`git rebase --continue` / `--abort`, `git merge --continue` / `--abort`, `git cherry-pick --continue` / `--abort`), then re-run." Detected by checking for the presence of any of: `.git/rebase-merge/`, `.git/rebase-apply/`, `.git/MERGE_HEAD`, `.git/CHERRY_PICK_HEAD`, `.git/REVERT_HEAD`. (The `git status --porcelain` check alone is insufficient — a paused rebase can have an empty porcelain.)
 
 **Branch health checks (auto-detect + run):**
 
@@ -110,7 +113,7 @@ The skill scans for a project-defined pre-commit alias or pipeline, in this orde
 
 Skill reports what it found and asks: `run / edit / skip`.
 
-- **run** — execute. On non-zero exit, halt with stdout/stderr summary: "Branch health checks failed. Address these and re-run finalize-branch. Skip with `skip` if you intentionally want to bypass."
+- **run** — execute. On non-zero exit, halt with the failed command, stdout/stderr summary, and a recovery hint: "Branch health checks failed: `<command>` exited <code>. Failures look like: `<one-line summary of the most relevant error>`. Address the failures and re-run `/finalize-branch`. To bypass intentionally, re-run and answer `skip` at the checks prompt."
 - **edit** — user provides a replacement command, then run.
 - **skip** — record that checks were skipped. Final commit message footer notes `(branch health checks skipped)`.
 
@@ -267,7 +270,7 @@ About to delete (phase 4):
 Continue? (yes / show diff / cancel)
 ```
 
-`show diff` runs `git diff` (uncommitted) plus the list of pending deletes. `cancel` aborts the skill — working tree changes from phases 2/3 stay in place; nothing is rolled back. Skill prints: "Cancelled. Working tree contains <N> applied edits from phases 2/3. Use `git restore` to discard or commit manually."
+`show diff` runs `git diff` (uncommitted) plus the list of pending deletes. `cancel` aborts the skill — working tree changes from phases 2/3 stay in place; nothing is rolled back. Skill prints: "Cancelled. Working tree contains <N> applied doc edits from phases 2/3 (handoffs were NOT deleted). To discard everything: `git restore .`. To keep these edits as a separate commit: stage and commit them manually. To resume finalize: re-run `/finalize-branch` (this restarts from phase 0; prior approvals are not preserved)."
 
 If after phases 2 and 3 there are **zero proposals approved** *and* zero handoffs to delete, the skill exits with "Nothing to finalize" rather than producing an empty commit.
 
@@ -302,7 +305,7 @@ Skill shows the proposed message and asks: `commit / edit / cancel`. On `edit`, 
 
 **Step 5 — Commit.**
 
-`git commit -m "<message>"` via HEREDOC. Per global CLAUDE.md rules: never `--amend`, never `--no-verify`. On pre-commit hook failure, halt with hook output and direct user to fix and re-run finalize-branch (which restarts from phase 0; prior approvals are not preserved).
+`git commit -m "<message>"` via HEREDOC. Per global CLAUDE.md rules: never `--amend`, never `--no-verify`. On pre-commit hook failure, halt with the hook output and a recovery summary: "Pre-commit hook failed: `<one-line summary of what's failing>`. The doc changes from phases 2/3 are still in your working tree (and staged). Fix the failure, then re-run `/finalize-branch` (this restarts from phase 0; phase 1's approvals will need to be re-given, but the doc edits in your working tree will be picked back up by phase 2/3's audit)."
 
 **Step 6 — Final report.**
 
@@ -326,10 +329,10 @@ Skill exits.
 | Zero proposals after phases 2 + 3, plus zero handoffs | Exit with "Nothing to finalize" — no empty commit. |
 | Base branch undetectable | Try `main` → `master` → ask the user. |
 | Detached HEAD / mid-rebase / mid-merge | Refuse at phase 0. |
-| File edit fails mid-phase (disappeared, permission) | Halt phase, show partial state, user resolves and resumes or cancels. |
-| Working tree changes outside the skill mid-flow | Detected at phase 4 staging — pause, ask user to resolve. |
-| Pre-commit hook failure on final commit | Halt; surface hook output; direct user to fix and re-run (full restart). |
-| Cancellation at any approval gate | Exit. Working tree retains applied edits; nothing rolled back. |
+| File edit fails mid-phase (disappeared, permission) | Halt phase with: "Edit failed on `<path>`: `<error>`. Resolve the file issue (e.g., restore the file, fix permissions), then re-run `/finalize-branch`. Already-applied edits remain in the working tree." |
+| Working tree changes outside the skill mid-flow | Detected at phase 4 staging — pause with: "Detected files in `git status` not produced by this skill: `<list>`. Stage/commit them separately or discard, then continue (`yes` / `cancel`)." |
+| Pre-commit hook failure on final commit | Halt with hook output and a one-line failure summary; instruct user to fix and re-run `/finalize-branch`. |
+| Cancellation at any approval gate | Exit with summary naming applied edits, the recovery options (`git restore .`, manual commit, re-run), and that re-run restarts from phase 0. |
 | Worktrees | Works without modification — operates on `cwd`. |
 | Binary files in diff | Silently skipped in phase 2 candidate building. |
 
