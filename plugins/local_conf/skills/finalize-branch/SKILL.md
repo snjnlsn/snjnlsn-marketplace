@@ -151,6 +151,213 @@ Anything unaddressed in a chunk defaults to `accept`. The user may add free-form
 
 If new questions arise during resolution (rare), append and run another mini-chunk.
 
+### Step 5 — Callout extraction & routing
+
+Runs only if at least one handoff in the confirmed deletion list contains a matching callout heading. Otherwise silent.
+
+#### Pattern matching
+
+A callout is a Markdown heading at level `###` or deeper whose text matches:
+
+```
+^(<pattern>)(?:\s+\d+)?(?:\s*[—\-:]\s*.*)?$
+```
+
+…where `<pattern>` is one of the configured callout patterns. Each pattern is a literal heading-prefix string; singular and plural forms are listed as separate entries so handoffs using either form match. Default pattern set:
+
+- `Discovery` / `Discoveries`
+- `Decision` / `Decisions`
+- `Caveat` / `Caveats`
+- `Gotcha` / `Gotchas`
+- `Lesson learned` / `Lessons learned`
+- `Known issue` / `Known issues`
+- `Complexity` / `Complexities`
+- `Edge case` / `Edge cases`
+
+Each "X / Y" entry above expands to two literal patterns in the matcher's list. Pattern matching is case-insensitive on the keyword. Numbering after the keyword is optional and not anchored to any sequence — `### Discovery — title`, `### Discovery 1 — title`, `#### Decision: title`, `### Edge cases — empty input`, and a bare `### Known issues` all match.
+
+Multi-word patterns (`Lesson learned`, `Known issue`, `Edge case`) match literally as space-separated tokens at the heading-text start; internal whitespace is not collapsed.
+
+Matches require parsed Markdown headings, not raw text — a literal `### Discovery` line inside a fenced code block is ignored. Plain prose mentions ("see Discovery 4") are ignored.
+
+#### Dedup
+
+Callouts that recur across handoffs are deduped by canonical key: `(first handoff path, normalized heading text)`. Heading text is normalized by lowercasing, collapsing whitespace, and stripping leading numbering (`Discovery N —`). Later handoffs that reference the same heading text are treated as cross-references; only the first appearance becomes a routing item. Renumbering between handoffs is OK — the heading text is the anchor, not the number.
+
+#### Configuration
+
+Two things are known per project: the callout patterns and the repo-docs destination (file path + section heading inside it). Both follow a "convention with override" model.
+
+**Convention scan (default; zero config).** When Step 5 runs, the skill computes the destination by scanning `docs/` (top level plus one subdirectory level deep) for filenames matching this case-insensitive set:
+
+```
+discoveries.md, decisions.md, findings.md, lessons.md,
+caveats.md, gotchas.md, notes.md
+```
+
+- **Exactly one match** → that's the destination.
+- **Zero matches** → the bootstrap flow runs (below).
+- **Multiple matches** → the merge-offer flow runs (below).
+
+Once the file is identified, scan for a top-level heading matching `## Discoveries`, `## Findings`, `## Decisions`, `## Notes`, `## Lessons learned`, or `## Caveats` (case-insensitive). First match wins. If none found, the skill creates a `## Discoveries` section at the end of the file as part of the routed proposal — the user reviews the diff in the repo-documentation phase before commit.
+
+**Override file.** Used when the convention doesn't fit. Location: `.claude/finalize-branch.toml` or `.claude/finalize-branch.json` at repo root.
+
+Minimal TOML shape:
+
+```toml
+[discoveries]
+destination = "docs/conventions.md"
+section = "## Discovery log"
+patterns = ["Discovery", "Decision"]
+```
+
+JSON form:
+
+```json
+{
+  "discoveries": {
+    "destination": "docs/conventions.md",
+    "section": "## Discovery log",
+    "patterns": ["Discovery", "Decision"]
+  }
+}
+```
+
+Only `destination` is required. `section` defaults to `## Discoveries` (created if missing). `patterns` defaults to the built-in set; when overriding, list each form the project uses literally — singular and plural variants must each be specified (e.g., `["Discovery", "Discoveries"]`) since no auto-pluralization is applied to override values. Override beats convention scan in all cases.
+
+If the override's `destination` points to a missing file, halt at Step 5 entry: "Override points to `<path>` which doesn't exist. Create the file or fix the override." No silent fallback to convention. If the override file is unparseable, halt at Step 5 entry with the parse error and a recovery hint.
+
+**Multiple matches.** When the convention scan finds more than one candidate destination:
+
+```
+Multiple discovery destination candidates found:
+  - docs/discoveries.md
+  - docs/lessons.md
+
+Options:
+  1. Pick one as the destination (this branch only — leaves both files in place)
+  2. Merge into one (queued as a Reorganize proposal in the repo-documentation phase:
+     combined diff reviewed before commit; routed callouts land in the merge target)
+  3. Halt — let me set an override
+
+Choice? (1 / 2 / 3)
+```
+
+Option 2 aligns with the existing **Reorganize** bucket — bounded to docs the branch's changes make relevant. The merge offer only appears because callouts need routing; without callouts, duplicate destinations sit untouched.
+
+**Bootstrap (zero matches).** If the convention scan finds nothing and no override exists:
+
+```
+No discoveries destination found. Propose creating `docs/discoveries.md`?
+(`yes` / `nuance: <different path>` / `cancel`)
+```
+
+On `yes`, the new file is added to the repo-documentation phase as a **Create** proposal. Routed callouts populate it.
+
+#### Per-callout routing UX
+
+After extraction, dedup, and destination resolution, print a one-line tally and the resolved destination:
+
+```
+Found 6 unique callouts across 4 handoffs (after dedup).
+Destination: docs/conventions.md → ## Discoveries
+```
+
+If a bootstrap flow ran, that prompt completes first so the destination is settled before answering routing questions.
+
+Then per-callout walk, one at a time:
+
+```
+Callout 3 of 6 — from docs/handoffs/<filename>.md
+
+  ### Discovery 4 — <heading text>
+
+  [first 8-12 lines of body, with "…" if truncated]
+
+  Recommendation: add-to-repo-docs
+  Reasoning: <one-sentence rationale based on heuristics below>
+
+  Choose:
+    a — already-captured       (already in code or docs; nothing to do)
+    c — add-to-inline-code     (becomes an @moduledoc/@doc/comment proposal)
+    r — add-to-repo-docs       (added to docs/conventions.md → ## Discoveries)
+    d — dismiss                (transient; no permanent home needed)
+  Or: nuance: <free text> to push back on the recommendation
+```
+
+The destination path appears inline next to `add-to-repo-docs` so the user can see exactly where it'll land.
+
+**Recommendation heuristics** (best-effort defaults; user has final say):
+
+- `add-to-repo-docs` — when the callout describes an API/data contract, project-wide convention, or external-system fact. Default for most callouts.
+- `add-to-inline-code` — when the callout is tightly bound to a specific function/module *the branch added or modified*. Cross-reference `git diff <base>..HEAD` for symbol names that appear in the callout heading or body.
+- `already-captured` — when the heading text appears (case-insensitive substring match) in any code comment or any `docs/` doc *outside* `docs/handoffs/` in the current tree. Flag with: `(I see "<matching text>" already in <path>:<line>)`. The user still confirms — never auto-skip.
+- `dismiss` — for transient facts ("we tried X, it didn't work, we did Y") with no permanent home. Rare default; usually picked manually.
+
+**Routing actions:**
+
+- **`add-to-repo-docs`** — creates a tracked **Augment** proposal against the destination file and section, with rewritten atemporal content (see "Content transformation" below). Reviewed in the repo-documentation phase via the existing `approve / nuance / skip` rhythm.
+- **`add-to-inline-code`** — pick a target symbol:
+  1. If exactly one diff-symbol matches the callout, that's the recommendation.
+  2. If zero match, prompt for one (`module/function`) or back-out to the four-way choice.
+  3. If multiple match, list with a recommendation.
+
+  The selected symbol becomes a tracked **inline-code-doc proposal** that joins the inline-documentation phase's per-file walk. Tagged with its callout source so the user sees `[from callout: Discovery 4 in <handoff filename>]` as context. Same `approve / nuance / skip` rhythm.
+- **`already-captured`** — record as "captured at `<path>:<line>`". No proposal created. Counted toward the commit footer's `N already captured` tally.
+- **`dismiss`** — record. Counted toward the commit footer's `N dismissed` tally.
+
+`nuance: <text>` lets the user push back without picking a routing. The skill replies, possibly revises its recommendation, and re-prompts. Same rhythm as the existing per-proposal nuance loop.
+
+#### Content transformation for `add-to-repo-docs`
+
+When a callout is routed to repo docs, draft a `### <title>` section to append under the destination's `##` heading. The rewrite applies §"Documentation language and tone" plus these callout-specific rules:
+
+- **Strip temporal markers.** "During this session", "in the <date> handoff", "we discovered", "as we worked through", "after the Nth amendment". Replace with present-tense statements about the system.
+- **Strip branch/PR/plan references.** "Task X in the active plan", "this branch", "the in-flight plan". The destination doc lives past all of those.
+- **Keep code/data fences and tables verbatim.** Real artifacts (sample data, command snippets, route tables) are the part of a callout most often worth preserving as-is. Never paraphrase inside fences or table cells.
+- **Promote the heading and strip session-relative numbering.** `### Discovery 4 — <title>` becomes `### <title>`.
+- **No source-handoff backlink.** Handoffs are deleted in the final phase. Linking would dangle. Git history preserves the original.
+
+Per-callout proposal display (in the repo-documentation phase walk):
+
+```
+Augment proposal — docs/conventions.md
+  Source callout: Discovery 4 from <handoff filename>
+
+  Insertion: append under `## Discoveries` (creating section if missing)
+
+  ┌─ Proposed addition (rewritten) ─────────────────────────────────
+  │ ### <rewritten title>
+  │
+  │ <rewritten atemporal body, 2-4 sentences>
+  │
+  │ ```<language>
+  │ <preserved verbatim fence content>
+  │ ```
+  └─────────────────────────────────────────────────────────────────
+
+  Approve (a) / nuance: <text> / skip (s)
+```
+
+If the destination doc lacks the configured section heading, the first routed callout's proposal includes the section header plus the new entry as one diff. Subsequent callouts append under the now-existing heading.
+
+Entries land in routing order = Step 5 walk order = chronological order across handoffs (oldest discovery first). Produces a chronological log feel without requiring date prefixes inside the doc.
+
+#### Step 5 close-out
+
+```
+Audit step 5 complete:
+  Added to inline code docs:  1 (Acme.Users @moduledoc)
+  Added to repo docs:         3 (→ docs/conventions.md)
+  Already captured:           1
+  Dismissed:                  1
+```
+
+Step 5 doesn't gate on the user — it transitions straight into Step 6 when there's anything to scan, or skips ahead to the audit-phase close-out gate when there isn't. The user-facing "Proceed to inline code documentation?" prompt is owned by whichever step exits the audit phase last.
+
+The contract: every extracted callout has an explicit routing decision before the audit phase exits. The handoff-cleanup phase carries a defensive halt that fires if conversation state ever reaches deletion with an unrouted callout.
+
 ## Phase 2 — Inline code documentation
 
 Apply §Documentation language and tone to every proposed `@moduledoc` / `@doc` / docstring / JSDoc.
