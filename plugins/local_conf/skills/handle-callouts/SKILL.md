@@ -24,6 +24,11 @@ Also activate proactively when the session produces:
 - A finding that explains repeated behavior elsewhere
 - A decision that closes off an alternative explicitly considered
 
+**Mark resolved triggers** — when the user closes out a previously-recorded callout, route into `## Mark resolved subflow` instead of the authoring flow:
+
+- **Explicit:** "mark X resolved", "this is fixed", "the JWT skew Known issue is gone now", "resolve callout 3", "<finding> is no longer applicable".
+- **Proactive:** when the session's diff appears to address a callout the skill has seen in the working handoff or in the branch's older handoffs (recognition during normal session flow, not a separate scan).
+
 Propose once per moment. If declined, don't re-propose for the same finding — the user can always trigger explicitly later.
 
 ## Terminology
