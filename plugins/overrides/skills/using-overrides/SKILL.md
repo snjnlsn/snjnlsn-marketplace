@@ -1,6 +1,6 @@
 ---
 name: using-overrides
-description: Use when about to invoke any skill or dispatch any subagent that has a same-named variant in the `overrides:` plugin — routes to the override instead of the upstream (`superpowers:`, `feature-dev:`) variant, and supplies the canonical MCP toolkit guidance that all overrides reference.
+description: Use when about to invoke any skill or dispatch any subagent that has a same-named variant in the `overrides:` plugin — routes to the override instead of the upstream (`superpowers:`) variant, and supplies the canonical MCP toolkit guidance that all overrides reference.
 ---
 
 # Route to the overrides plugin
@@ -44,9 +44,7 @@ These are concrete at time of writing — but the **rule is general**: always ch
 
 | Task | Use `subagent_type` | Replaces |
 |---|---|---|
-| Exploring or understanding an existing feature | `overrides:code-explorer` | `feature-dev:code-explorer` |
-| Designing a new feature architecture | `overrides:code-architect` | `feature-dev:code-architect` |
-| Reviewing code for bugs / convention compliance | `overrides:code-reviewer` | `feature-dev:code-reviewer` |
+| Reviewing completed work against plan + standards | `overrides:code-reviewer` | `superpowers:code-reviewer` |
 
 ### Prompt templates
 
@@ -112,11 +110,10 @@ lines, config keys) and `Read` for non-code files (Markdown, JSON, YAML).
 
 ## Subagent dispatches must include the MCP toolkit preamble
 
-Fresh subagent contexts do not load skills, so they do not see the canonical block above. Every dispatched `Agent` prompt for code work must paste the **MCP toolkit (canonical)** block (or the equivalent text from the agent's own system prompt) at the top of the subagent prompt. The override agents (`overrides:code-reviewer`, `overrides:code-explorer`, `overrides:code-architect`) already inline this block in their system prompts and have the corresponding MCPs in their tool allowlists, so for those it's belt-and-suspenders — but include it anyway in case an agent definition drifts.
+Fresh subagent contexts do not load skills, so they do not see the canonical block above. Every dispatched `Agent` prompt for code work must paste the **MCP toolkit (canonical)** block (or the equivalent text from the agent's own system prompt) at the top of the subagent prompt. The override agent `overrides:code-reviewer` already inlines this block in its system prompt and inherits the full default tool set (no `tools:` allowlist — matching its `superpowers:code-reviewer` parent so trivial inline fixes via `Edit` / Serena's symbolic-edit tools work), so the MCPs are reachable — but paste the preamble anyway in case the agent definition drifts.
 
 ## Exceptions
 
-- **`superpowers:code-reviewer`** (the superpowers plugin's own code-reviewer subagent) exposes its full tools list, so all three MCPs work there. Keep it if a workflow explicitly calls for it — and always paste the MCP toolkit preamble.
 - **`Explore`, `Plan`, `general-purpose`** subagent types — use as-is; their tool allowlists already include MCP tools. Always paste the MCP toolkit preamble.
 - **Explicit user request for a specific variant** — honor it, but flag the tradeoff ("you asked for `superpowers:brainstorming` — note there's an `overrides:brainstorming` with MCP-first exploration guidance; want that instead?").
 
