@@ -15,30 +15,56 @@ Task tool (general-purpose):
     (Kept in sync with **MCP toolkit (canonical)** in `overrides:using-overrides`.
     If you find drift, update this block to match.)
 
-    This project has MCP servers. Use them instead of `Read`/`Grep`/`Glob` for
-    code navigation, and instead of `WebSearch` or speculative code for
-    understanding dependencies:
+    This project has four MCP servers. Use them in preference to
+    `Read`/`Grep`/`Glob` for code navigation, and instead of `WebSearch` or
+    speculative code for understanding dependencies.
 
-    - **Serena** (`mcp__serena__*`) — symbolic code navigation. First call
+    **Tidewave is the primary tool whenever it's reachable.** It introspects
+    the actual loaded application — including dynamically-defined Phoenix/Ash
+    modules that static tools can't see. Always reach for Tidewave first for:
+    evaluating code, querying the database, reading dev logs, looking up
+    docs, finding source locations, or introspecting Ash/Ecto schemas. Fall
+    back to the static MCPs only if Tidewave fails or the server is down.
+
+    - **Tidewave** (`mcp__tidewave__*`) — runtime introspection of the running
+      Phoenix app:
+      - `project_eval` — evaluate Elixir in the app context to check what
+        the implementer's code actually does at runtime
+      - `execute_sql_query` — query the dev database to verify schema /
+        migration changes
+      - `get_logs` — read recent dev-server log output for warnings the
+        implementer may have ignored
+      - `get_ash_resources` / `get_ecto_schemas` — live introspection of
+        the Ash registry and Ecto schemas
+      - `get_docs` — verify the implementer's API usage against module/
+        function docs (**preferred over HexDocs MCP when the server is up**)
+      - `get_source_location` — jump to a module/function definition to
+        confirm the implementer is calling the real thing (**preferred
+        over Serena's `find_symbol` for "where is this defined?"**)
+      - `search_package_docs` — search docs for any loaded Hex dep
+        (**preferred over HexDocs MCP when the server is up**)
+    - **Serena** (`mcp__serena__*`) — symbolic code navigation. Tidewave
+      locates symbols; Serena reads them. First call
       `mcp__serena__check_onboarding_performed` to activate (or
       `mcp__serena__onboarding` if not yet onboarded). Then prefer
       `get_symbols_overview`, `find_symbol`, and `find_referencing_symbols`
       over reading whole files. Read the implementer's actual code
       symbol-by-symbol — it's how you'll catch missing or extra behavior
       most efficiently.
-    - **HexDocs** (`mcp__hexdocs-mcp__*`) — for any Elixir/Hex package. Use
-      `mcp__hexdocs-mcp__search` to look up function signatures, behaviour
-      callbacks, and module docs. Run `mcp__hexdocs-mcp__fetch` first if the
-      package isn't indexed yet.
+    - **HexDocs** (`mcp__hexdocs-mcp__*`) — fallback for Hex package docs
+      when the dev server isn't running, or for deps not loaded into the app.
+      Use `mcp__hexdocs-mcp__search`; run `mcp__hexdocs-mcp__fetch` first if
+      the package isn't indexed yet.
     - **Context7** (`mcp__context7__*`) — for non-Hex libraries, CLI tools,
       cloud services, version-specific guidance. Resolve with
       `mcp__context7__resolve-library-id`, then query with
       `mcp__context7__query-docs`.
 
-    **Do not** fall back to `WebSearch` or speculative code (e.g. `iex` snippets
-    to guess how a stdlib function behaves) before trying these. Look it up via
-    HexDocs (Hex packages) or read the source via Serena (in-repo modules and
-    `deps/`).
+    **Do not** fall back to `WebSearch` or speculative code (e.g. `iex`
+    snippets to guess how a stdlib function behaves) before trying these.
+    Look it up via Tidewave's `get_docs` / `search_package_docs` if the
+    server is up, HexDocs MCP otherwise, and read the source via Serena
+    (in-repo modules and `deps/`).
 
     ## What Was Requested
 
