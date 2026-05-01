@@ -194,7 +194,7 @@ The `2.0.0` bump (from `1.10.0`) reflects that four skills and two scripts are r
 
 **`plugins/local_conf/README.md`** — drop:
 
-- All four skill rows from the Skills table. The Skills section becomes either a table with no rows or a `_(none currently — see `session-continuity` plugin for handoff/retrospect/callouts/finalize-branch skills)_` placeholder.
+- All four skill rows from the Skills table. Drop the Skills table heading entirely and replace the section body with a one-line note: `_No skills — the session-handoff, session-retrospect, handle-callouts, and finalize-branch skills moved to the `session-continuity` plugin._`
 - The `handoff-list-recent.sh` and `stop-nudge.sh` rows from the Scripts table.
 - The handoff/nudge mentions in the `SessionStart` and `Stop` rows of the Hooks table; those rows now describe only the Serena commands.
 - Any prose mentioning the moved skills.
