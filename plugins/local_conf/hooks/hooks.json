@@ -28,10 +28,6 @@
           {
             "type": "command",
             "command": "serena-hooks activate --client=claude-code"
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/handoff-list-recent.sh"
           }
         ]
       }
@@ -43,10 +39,6 @@
           {
             "type": "command",
             "command": "serena-hooks cleanup --client=claude-code"
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/stop-nudge.sh"
           }
         ]
       }
