@@ -248,7 +248,7 @@ When parsing a filename:
 - A description of work completed → "Work done"
 - A TODO, follow-up item, or unresolved question → "Open questions / next steps"
 - A high-level framing or outcome statement → "Summary"
-- A discovery, decision, caveat, gotcha, lesson learned, known issue, complexity, or edge case worth a permanent home → a callout heading (see "Callouts: discoveries, decisions, caveats"), **not** a bullet under "Work done"
+- A discovery, decision, caveat, gotcha, lesson learned, known issue, complexity, or edge case worth a permanent home → delegate to `handle-callouts` (it writes the callout heading; **not** a bullet under "Work done")
 - Retrospective insight (only via `session-retrospect` skill) → "Retrospective"
 
 ## State
