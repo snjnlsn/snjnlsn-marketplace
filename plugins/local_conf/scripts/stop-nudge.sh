@@ -73,7 +73,7 @@ fi
 # Update last-nudge timestamp (best-effort)
 echo "$now_epoch" > "$state_file" 2>/dev/null || true
 
-msg="This looks like a wrap-up moment. Consider running /handoff to update the session handoff or /retrospect to reflect on the session. Suppressed for ${COOLDOWN_MIN} minutes."
+msg="This looks like a wrap-up moment. Consider updating the session handoff or running a session retrospective. Suppressed for ${COOLDOWN_MIN} minutes."
 
 jq -n --arg msg "$msg" '{
   systemMessage: $msg
