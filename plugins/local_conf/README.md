@@ -4,10 +4,6 @@ Personal Claude Code plugin holding hooks and helper scripts for `services@snjnl
 
 ## What's inside
 
-### Skills
-
-_No skills — the `session-handoff`, `session-retrospect`, `handle-callouts`, and `finalize-branch` skills moved to the [`session-continuity`](../session-continuity/) plugin._
-
 ### Hooks
 
 | Event | Behavior |
