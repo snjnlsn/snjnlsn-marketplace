@@ -135,7 +135,7 @@ Callouts follow the "Language and tone" rules from `session-handoff` SKILL.md (l
 
 ## Coordination with `session-handoff`
 
-`session-handoff` retains its callout safety-net role: when the user explicitly invokes it to "update the handoff" and there's a finding this skill missed, `session-handoff` can still write a properly-formatted callout. This skill is the primary author during the session; `session-handoff` is the safety net. Both write to the same handoff in the same format.
+`session-handoff` recognizes callout-shaped content during its append flow and **delegates to this skill** via the Skill tool. This skill owns all callout writes: format, dedup, placement. `session-handoff` owns the handoff document lifecycle (create, read, route non-callout content, migrate). The two skills are mutually-recursive in trigger but mutually-exclusive in execution — `session-handoff`'s lazy-create runs only when no handoff exists; the delegation runs only when one does.
 
 ## Tool usage
 
