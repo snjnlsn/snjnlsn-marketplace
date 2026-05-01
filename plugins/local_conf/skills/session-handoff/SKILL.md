@@ -165,6 +165,7 @@ On the first write request without a working handoff:
 
 ### Append to existing handoff
 
+0. **Callout delegation.** If the content matches any trigger in `handle-callouts/SKILL.md`'s `## When to use` section (callout-shaped headings, callout-worthy findings, and — once the resolution-detection spec ships — resolution-shaped phrases), invoke `handle-callouts` via the Skill tool and stop. The remaining steps handle non-callout content only.
 1. Use Read to load the file.
 2. Use Edit to splice content into the appropriate section (Summary, Work done, Open questions / next steps, Retrospective).
 3. Use Edit to refresh the "Last updated" timestamp.
