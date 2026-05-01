@@ -245,7 +245,59 @@ Single-letter shortcuts (`m`/`f`/`l`/`b`) avoid collision with the existing rout
 
 **`nuance: <text>`** — user pushes back on the synthesis or proposes a better one. Skill regenerates and re-prompts. Same rhythm as existing `nuance:` patterns elsewhere in Phase 1.
 
-**Output:** a list of merged routing items, each carrying its origin metadata (which handoffs it came from, which match category triggered the merge). The per-callout routing walk in subsequent sub-sections consumes this list as it does today.
+**Output:** a list of merged routing items, each carrying its origin metadata (which handoffs it came from, which match category triggered the merge). Resolved clusters (see `#### Resolution filter`) are tagged at this point and pass through; active clusters flow into the per-callout routing walk in subsequent sub-sections.
+
+#### Resolution filter
+
+Resolved callouts skip the routing walk entirely — there's no current state to document. The filter runs against the merged clusters output by smart-merge dedup, splits them into resolved and active, and feeds only active clusters into Configuration and the per-callout walk.
+
+**Resolution marker detection regex:**
+
+```
+^\s*>\s*Resolved\b\s*[:—\-]?\s*(.*?)\s*$
+```
+
+Captures an optional payload (commit ref, freeform note). A bare `> Resolved` matches with empty capture. Markers are written by `handle-callouts`' Mark resolved subflow.
+
+**Filter order:**
+
+1. **Explicit markers first.** Any cluster whose newest member has a `> Resolved: …` marker → silently dropped from the walk; counted toward the resolved tally. (Smart-merge already skipped its prompt for these clusters — see "Skip-prompt for resolved clusters" in `#### Smart-merge dedup`.)
+2. **Heuristic on remaining clusters.** For each active cluster whose type is **issue-shaped** (Known issue, Caveat, Gotcha, Edge case) or **Complexity**, run the diff-evidence scan.
+
+The heuristic does not run on Discovery / Decision / Lesson learned — these atemporal types have no clear diff signal for resolution. Explicit markers still work for them via the heavy flow.
+
+**Diff-evidence scan** (per candidate cluster):
+
+- Extract file paths and code symbols from the body. Path candidates: tokens matching path-shaped strings (`lib/...`, `test/...`, `src/...`, etc.). Symbol candidates: capitalized identifiers, dotted forms (`Auth.JWT.verify/2`), function-arity forms.
+- Cross-reference against `git diff <base>..HEAD --name-only` and `git diff <base>..HEAD --stat`.
+- **Fire** if a mentioned path or symbol is touched **and** the diff in that area exceeds the threshold: more than 10 lines changed (added + removed combined), or any new test files added under the path.
+
+**Heuristic prompt:**
+
+```
+Possible resolution detected — Known issue 3 from <handoff path>
+
+  ### Known issue — JWT clock skew tolerance varies by platform
+
+  > Tokens minted on macOS fail validation on Linux when …
+
+  Evidence: lib/auth/jwt.ex (+47/-12), test/auth/jwt_test.exs (new file, 38 lines).
+
+  Mark resolved (y) / route normally (n) / show diff (d)
+```
+
+`y` → drop, count toward resolved. `n` → continue into the routing walk. `d` → dump the matched diff hunks, then re-prompt.
+
+False-positive cost is one prompt; false negatives fall through to the routing walk where the user can `dismiss`.
+
+**Edge cases:**
+
+- **Resolution-only callout in the working handoff with no cluster match across older handoffs.** Smart-merge produces a single-member cluster containing only the resolution marker. Surface a warning here: `resolution-only callout <heading> in <working handoff> doesn't match any active callout in the branch — wasn't counted as resolved`. User can dismiss and proceed.
+- **Marker references a commit that's been rebased away.** Note becomes stale but the marker still works as a resolution signal. No special handling.
+- **Multiple resolution markers in one body.** Last one wins (most recent edit). All are stripped during smart-merge body normalization.
+- **Branch with no diff** (rare; user finalizes a no-op branch). Heuristic never fires; explicit markers still work.
+
+**Output:** a tally of resolved clusters (counted in the Phase 4 commit footer; not routed) and a list of active clusters that flow into Configuration and the per-callout routing walk.
 
 #### Configuration
 
