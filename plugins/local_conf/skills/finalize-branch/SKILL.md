@@ -187,7 +187,7 @@ Callouts that match across (or within) handoffs are detected and resolved via a 
 **Match signals.** A pair of callouts triggers as a match if either of these fires:
 
 - **Heading text match.** Normalized canonical key: lowercase, collapse whitespace, strip leading numbering (`Discovery N —`). The heading text is the anchor, not the number; renumbering between handoffs is OK.
-- **Body substance match.** Semantic judgment — do the two callouts describe the same finding, even with different headings?
+- **Body substance match.** Semantic judgment — do the two callouts describe the same finding, even with different headings? **Normalization:** strip lines matching `^\s*>\s*Resolved\b.*$` before comparing — the resolution marker is metadata, not content, and including it would distort the substance match.
 
 **Trigger threshold:**
 
@@ -196,6 +196,8 @@ Callouts that match across (or within) handoffs are detected and resolved via a 
 | **True duplicate**: heading matches by canonical normalization AND body matches by string equality after collapsing whitespace runs and trimming leading/trailing whitespace (no semantic judgment) | Silent collapse, first wins (no prompt) |
 | Heading match, body diverges (whitespace-stripped string inequality) | Smart-merge prompt |
 | Body-substance match (semantic judgment), heading diverges | Smart-merge prompt |
+
+**Skip-prompt for resolved clusters.** Before deciding whether the prompt fires, examine the newest cluster member's body for a resolution marker (regex: `^\s*>\s*Resolved\b.*$`; see `#### Resolution filter` for full semantics). If present, the cluster is resolved — skip the smart-merge prompt entirely and pass the cluster to the resolution filter unchanged. If absent, the prompt fires per the trigger threshold above.
 
 **Resolution categories** (used to draft the synthesis):
 
@@ -234,6 +236,15 @@ Body-substance match detected — Discovery 1 (in handoff A) vs Caveat 2 (in han
 ```
 
 Single-letter shortcuts (`m`/`f`/`l`/`b`) avoid collision with the existing routing UX (`a`/`c`/`r`/`d`).
+
+**Reopen-after-resolution.** When the newest cluster member is unmarked but at least one older member has a resolution marker, the smart-merge prompt prepends a history note before the source excerpts:
+
+```
+Note: this callout was marked resolved in handoff <B> (> Resolved: switched to JWT v2 …)
+but is active in handoff <C>. Treating as active.
+```
+
+The synthesis draft can fold the resolved-then-reopened arc into the body when relevant. User can `nuance` if the framing is off. No new markup required — absence of a resolution marker on a newer cluster member implies reopened.
 
 **Atemporal rewrite timing.** The synthesis applies the atemporal-rewrite rules (see "Content transformation for `add-to-repo-docs`" below: strip temporal markers, strip branch/PR refs, keep code/data fences verbatim, promote heading) **before** showing the prompt. So the merged routing item is ready to flow into the routing walk. `f` and `l` route the original heading + body verbatim; atemporal rewrite still applies at routing time as today. Only `m` benefits from the pre-prompt rewrite.
 
