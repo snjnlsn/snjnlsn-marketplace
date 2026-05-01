@@ -62,32 +62,53 @@ This block is the single source of truth for MCP tool guidance across the
 overrides plugin. Other override skills, agents, and prompt templates
 reference it by name and should not paraphrase or diverge.
 
-This project ships three MCP servers. Use them in preference to generic tools
-(`Read`/`Grep`/`Glob`), `WebSearch`, or speculative code:
+This project ships four MCP servers. Use them in preference to generic tools
+(`Read`/`Grep`/`Glob`), `WebSearch`, or speculative code (e.g. `iex` snippets
+to guess how a function behaves).
 
-- **Serena** (`mcp__serena__*`) — symbolic code navigation. Activate once per
-  session with `mcp__serena__check_onboarding_performed` (or
-  `mcp__serena__onboarding` if not yet onboarded). Then prefer:
+**Tidewave is the primary tool whenever it's reachable.** It introspects the
+actual loaded application — including dynamically-defined Phoenix/Ash modules
+that static tools can't see. Always reach for Tidewave first for: evaluating
+code, querying the database, reading dev logs, looking up docs, finding source
+locations, or introspecting Ash/Ecto schemas. Fall back to the static MCPs
+only if Tidewave fails or the server is down.
+
+- **Tidewave** (`mcp__tidewave__*`) — runtime introspection of the running
+  Phoenix app:
+  - `project_eval` — run Elixir in the app context (real config, real repos,
+    real Ash registry — replaces `mix run -e` and ad-hoc `iex` snippets)
+  - `execute_sql_query` — query the dev database
+  - `get_logs` — read recent dev-server log output
+  - `get_ash_resources` / `get_ecto_schemas` — live introspection of the
+    Ash registry and Ecto schemas (correctly resolves meta-programmed shape)
+  - `get_docs` — module/function docs for anything loaded into the app
+    (**preferred over HexDocs MCP when the server is up**)
+  - `get_source_location` — jump to a module/function definition
+    (**preferred over Serena's `find_symbol` for "where is this defined?"**)
+  - `search_package_docs` — search docs for any loaded Hex dep
+    (**preferred over HexDocs MCP when the server is up**)
+- **Serena** (`mcp__serena__*`) — symbolic code navigation and editing.
+  Tidewave locates symbols; Serena reads them and edits them in place.
+  Activate once per session with `mcp__serena__check_onboarding_performed`
+  (or `mcp__serena__onboarding` if not yet onboarded). Then use:
+  - `find_symbol` (with `include_body=True`) to read a symbol's body
+  - `find_referencing_symbols` to find callers/usages — no Tidewave equivalent
+  - `replace_symbol_body`, `insert_before_symbol`, `insert_after_symbol`
+    for symbolic edits
   - `get_symbols_overview` to map a file's top-level structure
-  - `find_symbol` (with `include_body=True` when needed) to read a specific
-    class/method/function by name path
-  - `find_referencing_symbols` to find callers/usages — far cheaper and
-    more accurate than `Grep` for symbol-aware questions
-  - `list_memories` / `read_memory` to pick up project-specific context
-    captured in prior sessions
-- **HexDocs** (`mcp__hexdocs-mcp__*`) — for any Elixir/Hex package. Use
-  `mcp__hexdocs-mcp__search` to look up function signatures, behaviour
-  callbacks, and module docs. Run `mcp__hexdocs-mcp__fetch` first if the
-  package isn't indexed yet.
+  - `list_memories` / `read_memory` for project context from prior sessions
+- **HexDocs** (`mcp__hexdocs-mcp__*`) — fallback for Hex package docs when
+  the dev server isn't running, or when Tidewave's `search_package_docs`
+  doesn't surface what you need (e.g. a dep not loaded yet). Use
+  `mcp__hexdocs-mcp__search`; run `mcp__hexdocs-mcp__fetch` first if the
+  package isn't indexed.
 - **Context7** (`mcp__context7__*`) — for non-Hex libraries, CLI tools,
   cloud services, version-specific guidance. Resolve with
   `mcp__context7__resolve-library-id`, then query with
   `mcp__context7__query-docs`.
 
-**Do not** fall back to `WebSearch` or speculative code (e.g. `iex` snippets
-to guess how a stdlib function behaves) before trying these. Reserve `Grep`
-for text matches that aren't symbol names (error strings, log lines, config
-keys) and `Read` for non-code files (Markdown, JSON, YAML).
+Reserve `Grep` for text matches that aren't symbol names (error strings, log
+lines, config keys) and `Read` for non-code files (Markdown, JSON, YAML).
 
 ## Subagent dispatches must include the MCP toolkit preamble
 

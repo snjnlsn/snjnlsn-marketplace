@@ -4,7 +4,7 @@ Personal Claude Code plugin that customizes and hooks into other Claude Code plu
 
 ## What's inside
 
-The plugin standardizes on a single **MCP toolkit** (Serena + HexDocs + Context7) defined canonically in `skills/using-overrides/SKILL.md`. Every other override either references that block (skills loaded into the parent context) or carries a "kept in sync with" copy of it (agents and dispatch prompt templates, which fresh contexts can't load skills into).
+The plugin standardizes on a single **MCP toolkit** (Tidewave + Serena + HexDocs + Context7) defined canonically in `skills/using-overrides/SKILL.md`. Every other override either references that block (skills loaded into the parent context) or carries a "kept in sync with" copy of it (agents and dispatch prompt templates, which fresh contexts can't load skills into).
 
 ### Agents
 
@@ -19,7 +19,7 @@ The plugin standardizes on a single **MCP toolkit** (Serena + HexDocs + Context7
 | Path | Overrides | Purpose |
 |---|---|---|
 | `skills/using-overrides/` | *standalone* | Routing skill **and** canonical home for the MCP toolkit. Tells Claude to prefer any `overrides:` skill/agent over its upstream same-name counterpart, defines the MCP toolkit block referenced by every other override, and specifies the dispatch preamble for fresh subagent prompts |
-| `skills/brainstorming/` | `superpowers:brainstorming` | Replaces the upstream's "use Serena for code exploration" bullet with a pointer to the unified MCP toolkit (Serena + HexDocs + Context7) |
+| `skills/brainstorming/` | `superpowers:brainstorming` | Replaces the upstream's "use Serena for code exploration" bullet with a pointer to the unified MCP toolkit (Tidewave + Serena + HexDocs + Context7) |
 | `skills/writing-plans/` | `superpowers:writing-plans` | Replaces the upstream's "Inventorying existing code" Serena block with a pointer to the unified MCP toolkit, keeping the situational hint that `find_referencing_symbols` is essential for scoping caller-impact |
 | `skills/systematic-debugging/` | `superpowers:systematic-debugging` | Points *Trace Data Flow* and *Find Working Examples* at the unified MCP toolkit, including HexDocs/Context7 for verifying dependency behavior before assuming a bug |
 | `skills/receiving-code-review/` | `superpowers:receiving-code-review` | Routes the YAGNI "find actual usage" check through the MCP toolkit (Serena for symbols, HexDocs/Context7 for verifying a dependency's API before pushing back) |
