@@ -199,7 +199,7 @@ Found handoffs that don't match the new naming format:
   References found in 4 file(s):
     docs/architecture.md:42  → '…see docs/handoffs/2026-04-15-foo.md…'
     CLAUDE.md:18             → '…the handoff at 2026-04-15-foo.md notes…'
-    plugins/local_conf/scripts/foo.sh:7  → '…cat docs/handoffs/2026-04-18-bar.md…'
+    bin/release-notes.sh:7   → '…cat docs/handoffs/2026-04-18-bar.md…'
     docs/handoffs/2026-04-22-baz.md:14   → '…follows from 2026-04-18-bar.md…'
 
 Apply renames + reference updates? (`yes` / `no` / `show full diff` / `exclude <line>` / `exclude refs` — rename only)
