@@ -120,14 +120,21 @@ When the skill fires:
 
 Activated by the explicit and proactive Mark resolved triggers in `## When to use`. Marks an existing callout resolved by writing a `> Resolved: …` blockquote line into a callout body in the working handoff. Older handoffs are read-only — never edited mid-session.
 
-### 1. Identify the target callout
+### 1. Determine working handoff path
+
+- If working handoff is in conversation context → use it.
+- Else → invoke `session-handoff` via the Skill tool. It handles lazy-create or context re-discovery. Resume here with the resolved path.
+
+This step ensures a writable target exists before scanning. Even when the eventual target callout lives in an older handoff, the resolution-only callout still writes to the working handoff (see Step 5), so a working handoff is always required.
+
+### 2. Identify the target callout
 
 - Scan the working handoff first for a heading-text match against the user's reference.
 - If no match in the working handoff, scan the branch's older handoffs read-only via `git log <base>..HEAD --name-only --pretty=format: -- docs/handoffs/`. Read each candidate; look for matching headings or body-substance matches.
 - Surface candidates: `Did you mean ### Known issue — JWT clock skew … (in <handoff path>)? confirm / that's a different one / cancel.`
 - If zero candidates surface, ask the user to name the heading or paste the body.
 
-### 2. Compose the marker
+### 3. Compose the marker
 
 Format: `> Resolved: <freeform note + optional commit ref>` blockquote line.
 
@@ -135,17 +142,17 @@ Format: `> Resolved: <freeform note + optional commit ref>` blockquote line.
 - Bare `> Resolved` (no payload) is allowed.
 - Show the proposed payload to the user and let them edit before write.
 
-### 3. Confirm and write
+### 4. Confirm and write
 
 - **Explicit user trigger with target clear** → auto-write with one-line report (mirrors the authoring flow's explicit-typed shortcut).
 - **Proactive recognition or any ambiguity** → show the proposed marker + target heading; confirm before write.
 
-### 4. Apply the write
+### 5. Apply the write
 
 - **Target in the working handoff:** insert `> Resolved: …` as the first body line under the existing callout heading. Refresh `**Last updated:**` timestamp.
 - **Target in an older handoff:** write a *resolution-only callout* to the working handoff — heading copied verbatim from the older callout, body containing only the marker line. Smart-merge clusters them at branch end via heading match; cluster resolution is determined by the newest member (this resolution-only callout).
 
-### 5. Report
+### 6. Report
 
 One line: `Marked ### <heading> resolved in <handoff path>.`
 

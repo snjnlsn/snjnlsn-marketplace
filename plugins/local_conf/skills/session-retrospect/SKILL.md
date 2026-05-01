@@ -27,7 +27,7 @@ Also activate when the Stop hook has surfaced a wrap-up nudge and the user accep
      - `~/.claude/settings.json`
      - Hooks
 
-   If a callout-worthy item surfaces (a discovery, decision, lesson learned, etc. that should outlive the session), route through `handle-callouts` rather than into the Retrospective narrative — see Coordination section below.
+   If anything matching a trigger in `handle-callouts/SKILL.md`'s `## When to use` section surfaces — a new callout-worthy finding (discovery, decision, lesson learned, etc.) **or** a resolution-shaped statement that closes out a previous callout — route through `handle-callouts` rather than into the Retrospective narrative. See Coordination section below.
 2. **Present.** Write the retrospective to the user as a structured message with three sections (well / not well / candidate changes). Each candidate change should name the file and the proposed edit clearly enough that approval is meaningful.
 3. **Discuss.** The user can edit, add, remove, or reframe items. Keep the draft in conversation context. **Do not persist anything yet.**
 4. **Apply on approval.** When the user gives a clear "persist" / "apply these" / "ok do it" signal:
@@ -45,6 +45,12 @@ Also activate when the Stop hook has surfaced a wrap-up nudge and the user accep
 
 ## Coordination with `handle-callouts`
 
-The Retrospective section is for **experience reflection** — what went well, what didn't, how the session felt. Findings worth permanent record (discoveries, decisions, lessons learned, etc.) are **callouts**, not retrospective narrative; route those through the `handle-callouts` skill.
+The Retrospective section is for **experience reflection** — what went well, what didn't, how the session felt. Anything matching a trigger in `handle-callouts/SKILL.md`'s `## When to use` section routes through `handle-callouts` rather than into the Retrospective narrative. That covers two cases:
 
-Example: "We picked Tailwind over CSS modules" surfacing during retro — if it's reflection ("the team responded well"), it goes in the Retrospective; if it's the decision content ("Tailwind because of utility-class density"), it goes through `handle-callouts` as a Decision callout.
+- **New findings worth permanent record** (discoveries, decisions, lessons learned, etc.) → `handle-callouts` authoring flow writes a callout.
+- **Resolution-shaped statements that close out a previous callout** ("we resolved the JWT skew issue", "<finding> is no longer applicable") → `handle-callouts` Mark resolved subflow writes the marker. Without this, the resolution falls through to the lightweight heuristic at `finalize-branch` time, which is less reliable.
+
+Examples:
+
+- "We picked Tailwind over CSS modules" surfacing during retro — if it's reflection ("the team responded well"), Retrospective; if it's the decision content ("Tailwind because of utility-class density"), `handle-callouts` Decision callout.
+- "We resolved the JWT skew Known issue this session" — `handle-callouts` Mark resolved subflow, not retrospective narrative.
