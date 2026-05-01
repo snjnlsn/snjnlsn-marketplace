@@ -521,7 +521,7 @@ Each match becomes a tracked **inline-code-doc proposal** that the user resolves
 
 - If the referenced callout was routed to `add-to-repo-docs` in Step 5 → recommend `redirect` (preserves the link, fixes the dangling path).
 - If the referenced callout was routed to `add-to-inline-code` and the matched comment is on or near that symbol → recommend `inline` (the routed proposal will already cover the same ground).
-- If the referenced callout was `dismissed` or `already-captured` → recommend `remove` (the original reference is now noise).
+- If the referenced callout was `dismissed`, `already-captured`, or **resolved** in the resolution filter → recommend `remove` (the original concern is gone or already documented elsewhere).
 - If the reference is to a path/identifier with no Step 5 match (and the path isn't in the deletion list) → recommend `skip` (nothing to clean up).
 
 #### Per-reference proposal display
