@@ -1,0 +1,8 @@
+{
+  "name": "session-continuity",
+  "description": "Per-session and per-branch documentation lifecycle: handoffs, callouts, retrospects, branch finalization.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Sanjay Nelson"
+  }
+}

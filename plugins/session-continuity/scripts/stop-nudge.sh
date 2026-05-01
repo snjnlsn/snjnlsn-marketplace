@@ -14,7 +14,7 @@ TURN_THRESHOLD=20
 ELAPSED_MIN_THRESHOLD=30
 COOLDOWN_MIN=15
 
-CACHE_DIR="${HOME}/.cache/local_conf/stop-nudge"
+CACHE_DIR="${HOME}/.cache/session-continuity/stop-nudge"
 mkdir -p "$CACHE_DIR" 2>/dev/null || true
 
 input=$(cat || true)

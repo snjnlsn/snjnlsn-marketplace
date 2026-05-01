@@ -7,7 +7,8 @@ Personal Claude Code plugin marketplace for me.
 | Plugin | Purpose |
 |---|---|
 | [`overrides`](plugins/overrides/) | MCP-enabled overrides (Tidewave/Serena/HexDocs/Context7) of `superpowers` agents/skills, plus a routing skill that prefers the MCP-enabled variants. |
-| [`local_conf`](plugins/local_conf/) | Personal hooks, helper scripts, skills, and slash commands. Includes session-handoff, session-retrospect, and finalize-branch skills, Serena auto-approval, in-place sed guard, and end-of-session wrap-up nudge. |
+| [`local_conf`](plugins/local_conf/) | Personal hooks and helper scripts. Serena auto-approve/activate/cleanup, and `sed -i` guard. |
+| [`session-continuity`](plugins/session-continuity/) | Per-session and per-branch documentation lifecycle: handoffs, callouts, retrospects, and branch finalization. Includes SessionStart context injection and a Stop wrap-up nudge. |
 
 ## Install
 
