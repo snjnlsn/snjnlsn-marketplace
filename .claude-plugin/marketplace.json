@@ -14,6 +14,11 @@
       "name": "local_conf",
       "description": "My personal configuration",
       "source": "./plugins/local_conf"
+    },
+    {
+      "name": "session-continuity",
+      "description": "Per-session and per-branch documentation lifecycle: handoffs, callouts, retrospects, branch finalization.",
+      "source": "./plugins/session-continuity"
     }
   ]
 }
