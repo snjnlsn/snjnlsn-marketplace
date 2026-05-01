@@ -187,7 +187,7 @@ Callouts that match across (or within) handoffs are detected and resolved via a 
 **Match signals.** A pair of callouts triggers as a match if either of these fires:
 
 - **Heading text match.** Normalized canonical key: lowercase, collapse whitespace, strip leading numbering (`Discovery N —`). The heading text is the anchor, not the number; renumbering between handoffs is OK.
-- **Body substance match.** Semantic judgment — do the two callouts describe the same finding, even with different headings?
+- **Body substance match.** Semantic judgment — do the two callouts describe the same finding, even with different headings? **Normalization:** strip lines matching `^\s*>\s*Resolved\b.*$` before comparing — the resolution marker is metadata, not content, and including it would distort the substance match.
 
 **Trigger threshold:**
 
@@ -196,6 +196,8 @@ Callouts that match across (or within) handoffs are detected and resolved via a 
 | **True duplicate**: heading matches by canonical normalization AND body matches by string equality after collapsing whitespace runs and trimming leading/trailing whitespace (no semantic judgment) | Silent collapse, first wins (no prompt) |
 | Heading match, body diverges (whitespace-stripped string inequality) | Smart-merge prompt |
 | Body-substance match (semantic judgment), heading diverges | Smart-merge prompt |
+
+**Skip-prompt for resolved clusters.** Before deciding whether the prompt fires, examine the newest cluster member's body for a resolution marker (regex: `^\s*>\s*Resolved\b.*$`; see `#### Resolution filter` for full semantics). If present, the cluster is resolved — skip the smart-merge prompt entirely and pass the cluster to the resolution filter unchanged. If absent, the prompt fires per the trigger threshold above.
 
 **Resolution categories** (used to draft the synthesis):
 
@@ -235,6 +237,15 @@ Body-substance match detected — Discovery 1 (in handoff A) vs Caveat 2 (in han
 
 Single-letter shortcuts (`m`/`f`/`l`/`b`) avoid collision with the existing routing UX (`a`/`c`/`r`/`d`).
 
+**Reopen-after-resolution.** When the newest cluster member is unmarked but at least one older member has a resolution marker, the smart-merge prompt prepends a history note before the source excerpts:
+
+```
+Note: this callout was marked resolved in handoff <B> (> Resolved: switched to JWT v2 …)
+but is active in handoff <C>. Treating as active.
+```
+
+The synthesis draft can fold the resolved-then-reopened arc into the body when relevant. User can `nuance` if the framing is off. No new markup required — absence of a resolution marker on a newer cluster member implies reopened.
+
 **Atemporal rewrite timing.** The synthesis applies the atemporal-rewrite rules (see "Content transformation for `add-to-repo-docs`" below: strip temporal markers, strip branch/PR refs, keep code/data fences verbatim, promote heading) **before** showing the prompt. So the merged routing item is ready to flow into the routing walk. `f` and `l` route the original heading + body verbatim; atemporal rewrite still applies at routing time as today. Only `m` benefits from the pre-prompt rewrite.
 
 **Transitive clusters.** When 3+ callouts pairwise match (A↔B and B↔C both match), treat them as one cluster with one prompt and one synthesis drawing from all sources. The `f`/`l` shortcuts mean "earliest" and "latest" across the whole cluster; middle versions are dropped if `f` or `l` is picked.
@@ -245,7 +256,59 @@ Single-letter shortcuts (`m`/`f`/`l`/`b`) avoid collision with the existing rout
 
 **`nuance: <text>`** — user pushes back on the synthesis or proposes a better one. Skill regenerates and re-prompts. Same rhythm as existing `nuance:` patterns elsewhere in Phase 1.
 
-**Output:** a list of merged routing items, each carrying its origin metadata (which handoffs it came from, which match category triggered the merge). The per-callout routing walk in subsequent sub-sections consumes this list as it does today.
+**Output:** a list of merged routing items, each carrying its origin metadata (which handoffs it came from, which match category triggered the merge). Resolved clusters (see `#### Resolution filter`) are tagged at this point and pass through; active clusters flow into the per-callout routing walk in subsequent sub-sections.
+
+#### Resolution filter
+
+Resolved callouts skip the routing walk entirely — there's no current state to document. The filter runs against the merged clusters output by smart-merge dedup, splits them into resolved and active, and feeds only active clusters into Configuration and the per-callout walk.
+
+**Resolution marker detection regex:**
+
+```
+^\s*>\s*Resolved\b\s*[:—\-]?\s*(.*?)\s*$
+```
+
+Captures an optional payload (commit ref, freeform note). A bare `> Resolved` matches with empty capture. Markers are written by `handle-callouts`' Mark resolved subflow.
+
+**Filter order:**
+
+1. **Explicit markers first.** Any cluster whose newest member has a `> Resolved: …` marker → silently dropped from the walk; counted toward the resolved tally. (Smart-merge already skipped its prompt for these clusters — see "Skip-prompt for resolved clusters" in `#### Smart-merge dedup`.)
+2. **Heuristic on remaining clusters.** For each active cluster whose type is **issue-shaped** (Known issue, Caveat, Gotcha, Edge case) or **Complexity**, run the diff-evidence scan.
+
+The heuristic does not run on Discovery / Decision / Lesson learned — these atemporal types have no clear diff signal for resolution. Explicit markers still work for them via the heavy flow.
+
+**Diff-evidence scan** (per candidate cluster):
+
+- Extract file paths and code symbols from the body. Path candidates: tokens matching path-shaped strings (`lib/...`, `test/...`, `src/...`, etc.). Symbol candidates: capitalized identifiers, dotted forms (`Auth.JWT.verify/2`), function-arity forms.
+- Cross-reference against `git diff <base>..HEAD --name-only` and `git diff <base>..HEAD --stat`.
+- **Fire** if a mentioned path or symbol is touched **and** the diff in that area exceeds the threshold: more than 10 lines changed (added + removed combined), or any new test files added under the path.
+
+**Heuristic prompt:**
+
+```
+Possible resolution detected — Known issue 3 from <handoff path>
+
+  ### Known issue — JWT clock skew tolerance varies by platform
+
+  > Tokens minted on macOS fail validation on Linux when …
+
+  Evidence: lib/auth/jwt.ex (+47/-12), test/auth/jwt_test.exs (new file, 38 lines).
+
+  Mark resolved (y) / route normally (n) / show diff (d)
+```
+
+`y` → drop, count toward resolved. `n` → continue into the routing walk. `d` → dump the matched diff hunks, then re-prompt.
+
+False-positive cost is one prompt; false negatives fall through to the routing walk where the user can `dismiss`.
+
+**Edge cases:**
+
+- **Resolution-only callout in the working handoff with no cluster match across older handoffs.** Smart-merge produces a single-member cluster containing only the resolution marker. Surface a warning here: `resolution-only callout <heading> in <working handoff> doesn't match any active callout in the branch — wasn't counted as resolved`. User can dismiss and proceed.
+- **Marker references a commit that's been rebased away.** Note becomes stale but the marker still works as a resolution signal. No special handling.
+- **Multiple resolution markers in one body.** Last one wins (most recent edit). All are stripped during smart-merge body normalization.
+- **Branch with no diff** (rare; user finalizes a no-op branch). Heuristic never fires; explicit markers still work.
+
+**Output:** a tally of resolved clusters (counted in the Phase 4 commit footer; not routed) and a list of active clusters that flow into Configuration and the per-callout routing walk.
 
 #### Configuration
 
@@ -458,7 +521,7 @@ Each match becomes a tracked **inline-code-doc proposal** that the user resolves
 
 - If the referenced callout was routed to `add-to-repo-docs` in Step 5 → recommend `redirect` (preserves the link, fixes the dangling path).
 - If the referenced callout was routed to `add-to-inline-code` and the matched comment is on or near that symbol → recommend `inline` (the routed proposal will already cover the same ground).
-- If the referenced callout was `dismissed` or `already-captured` → recommend `remove` (the original reference is now noise).
+- If the referenced callout was `dismissed`, `already-captured`, or **resolved** in the resolution filter → recommend `remove` (the original concern is gone or already documented elsewhere).
 - If the reference is to a path/identifier with no Step 5 match (and the path isn't in the deletion list) → recommend `skip` (nothing to clean up).
 
 #### Per-reference proposal display
@@ -637,7 +700,7 @@ Repo docs:
   - <terse summary>
 
 Removed <N> session handoff document(s).
-Callouts: <X> to repo docs, <Y> to inline code docs, <Z> already captured, <W> dismissed[, <M> smart-merged].
+Callouts: <X> to repo docs, <Y> to inline code docs, <Z> already captured, <W> dismissed[, <V> resolved by this branch][, <M> smart-merged].
 In-code references: <I> inlined, <R> redirected, <X> removed, <S> skipped.
 [optional: "(branch health checks skipped)"]
 ```

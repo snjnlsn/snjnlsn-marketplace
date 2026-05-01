@@ -24,6 +24,11 @@ Also activate proactively when the session produces:
 - A finding that explains repeated behavior elsewhere
 - A decision that closes off an alternative explicitly considered
 
+**Mark resolved triggers** — when the user closes out a previously-recorded callout, route into `## Mark resolved subflow` instead of the authoring flow:
+
+- **Explicit:** "mark X resolved", "this is fixed", "the JWT skew Known issue is gone now", "resolve callout 3", "<finding> is no longer applicable".
+- **Proactive:** when the session's diff appears to address a callout the skill has seen in the working handoff or in the branch's older handoffs (recognition during normal session flow, not a separate scan).
+
 Propose once per moment. If declined, don't re-propose for the same finding — the user can always trigger explicitly later.
 
 ## Terminology
@@ -111,6 +116,50 @@ When the skill fires:
 
 7. **Report.** One line — `Saved as ### <type> — <title> to <handoff path>.`
 
+## Mark resolved subflow
+
+Activated by the explicit and proactive Mark resolved triggers in `## When to use`. Marks an existing callout resolved by writing a `> Resolved: …` blockquote line into a callout body in the working handoff. Older handoffs are read-only — never edited mid-session.
+
+### 1. Identify the target callout
+
+- Scan the working handoff first for a heading-text match against the user's reference.
+- If no match in the working handoff, scan the branch's older handoffs read-only via `git log <base>..HEAD --name-only --pretty=format: -- docs/handoffs/`. Read each candidate; look for matching headings or body-substance matches.
+- Surface candidates: `Did you mean ### Known issue — JWT clock skew … (in <handoff path>)? confirm / that's a different one / cancel.`
+- If zero candidates surface, ask the user to name the heading or paste the body.
+
+### 2. Compose the marker
+
+Format: `> Resolved: <freeform note + optional commit ref>` blockquote line.
+
+- Pull resolution context from the user's framing or the most recent commit on the branch (proactive case).
+- Bare `> Resolved` (no payload) is allowed.
+- Show the proposed payload to the user and let them edit before write.
+
+### 3. Confirm and write
+
+- **Explicit user trigger with target clear** → auto-write with one-line report (mirrors the authoring flow's explicit-typed shortcut).
+- **Proactive recognition or any ambiguity** → show the proposed marker + target heading; confirm before write.
+
+### 4. Apply the write
+
+- **Target in the working handoff:** insert `> Resolved: …` as the first body line under the existing callout heading. Refresh `**Last updated:**` timestamp.
+- **Target in an older handoff:** write a *resolution-only callout* to the working handoff — heading copied verbatim from the older callout, body containing only the marker line. Smart-merge clusters them at branch end via heading match; cluster resolution is determined by the newest member (this resolution-only callout).
+
+### 5. Report
+
+One line: `Marked ### <heading> resolved in <handoff path>.`
+
+### Dedup interaction
+
+- Resolution-only callouts skip the authoring flow's dedup check. `finalize-branch`'s smart-merge handles the cluster at branch end.
+- Marking resolved a callout that already has a marker → prompt: `replace / keep existing / cancel`.
+
+### Edge cases
+
+- **Reversing a resolution mid-session.** User says "actually that came back." Edit the marker line out, or write a new active callout in the working handoff if the resolution-only one is the only record. Smart-merge will treat the cluster as active per latest-wins.
+- **Resolution-only callout has no source heading match in older handoffs.** Smart-merge won't cluster it. Surface a warning at write time: `no matching active callout found in branch handoffs — this won't count as a resolution at finalize-branch time. Continue?`
+- **Mark resolved on a callout type the heuristic narrows out** (Discovery, Decision, Lesson learned). Allowed — the marker writes; `finalize-branch` silently drops at routing time.
+
 ## Writing style
 
 Callouts follow the "Language and tone" rules from `session-handoff` SKILL.md (lines 74-97). The pertinent points:
@@ -135,7 +184,7 @@ Callouts follow the "Language and tone" rules from `session-handoff` SKILL.md (l
 
 ## Coordination with `session-handoff`
 
-`session-handoff` retains its callout safety-net role: when the user explicitly invokes it to "update the handoff" and there's a finding this skill missed, `session-handoff` can still write a properly-formatted callout. This skill is the primary author during the session; `session-handoff` is the safety net. Both write to the same handoff in the same format.
+`session-handoff` recognizes callout-shaped content during its append flow and **delegates to this skill** via the Skill tool. This skill owns all callout writes: format, dedup, placement. `session-handoff` owns the handoff document lifecycle (create, read, route non-callout content, migrate). The two skills are mutually-recursive in trigger but mutually-exclusive in execution — `session-handoff`'s lazy-create runs only when no handoff exists; the delegation runs only when one does.
 
 ## Tool usage
 
