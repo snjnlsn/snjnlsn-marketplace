@@ -10,9 +10,7 @@ The plugin standardizes on a single **MCP toolkit** (Tidewave + Serena + HexDocs
 
 | Path | Overrides | Purpose |
 |---|---|---|
-| `agents/code-reviewer.md` | `feature-dev:code-reviewer` | MCP toolkit in tool allowlist + system prompt; replaces `feature-dev:code-reviewer` for review-style dispatches |
-| `agents/code-explorer.md` | `feature-dev:code-explorer` | MCP toolkit in tool allowlist + system prompt; replaces `feature-dev:code-explorer` for exploration-style dispatches |
-| `agents/code-architect.md` | `feature-dev:code-architect` | MCP toolkit in tool allowlist + system prompt; replaces `feature-dev:code-architect` for architecture-design dispatches |
+| `agents/code-reviewer.md` | `superpowers:code-reviewer` | MCP toolkit in tool allowlist + system prompt; replaces `superpowers:code-reviewer` for the plan-alignment / quality review dispatched by `subagent-driven-development`'s code-quality reviewer step |
 
 ### Skills
 
