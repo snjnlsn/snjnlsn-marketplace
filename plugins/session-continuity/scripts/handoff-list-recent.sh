@@ -2,14 +2,15 @@
 set -euo pipefail
 
 # SessionStart hook helper.
-# Lists up to MAX most recent files in $cwd/docs/handoffs/ sorted by mtime,
+# Lists up to MAX most recent files in $cwd/.claude/handoffs/ sorted by mtime,
 # and emits a SessionStart additionalContext payload pointing Claude at
-# the session-handoff and session-retrospect skills.
+# the session-continuity skills (read-branch-handoffs, session-handoff,
+# handle-callouts, session-retrospect).
 #
 # Always exits 0. On any internal error, emits no context (still exits 0)
 # so the session is never blocked.
 
-HANDOFF_DIR="docs/handoffs"
+HANDOFF_DIR=".claude/handoffs"
 MAX=5
 
 emit_context() {
@@ -25,7 +26,7 @@ list_recent() {
   if [ ! -d "$HANDOFF_DIR" ]; then
     return 0
   fi
-  find "$HANDOFF_DIR" -maxdepth 1 -type f -name "*.md" \
+  find "$HANDOFF_DIR" -maxdepth 1 -type f -name "*.md" ! -name "README.md" \
     -exec stat -f '%m %N' {} + 2>/dev/null \
     | sort -rn \
     | head -n "$MAX" \
@@ -39,9 +40,9 @@ list_recent() {
 recent=$(list_recent 2>/dev/null || true)
 
 if [ -n "$recent" ]; then
-  ctx=$(printf 'Recent session handoffs in %s/:\n%s\n\nThe `session-handoff` skill can read, continue, or start fresh. The `session-retrospect` skill is also available on demand. If a recent handoff is relevant, consider offering the user to read it for context or continue it.' "$HANDOFF_DIR" "$recent")
+  ctx=$(printf 'Recent session handoffs in %s/:\n%s\n\nFor full branch context (every handoff attributable to the current branch, committed + uncommitted), invoke the `read-branch-handoffs` skill — that is the sanctioned bulk read path. The `session-handoff` skill handles single-handoff create/read/continue/append; `handle-callouts` records findings; `session-retrospect` reflects at session end. %s/ is managed exclusively by these skills — do not list, edit, or delete handoff files directly.' "$HANDOFF_DIR" "$recent" "$HANDOFF_DIR")
 else
-  ctx=$(printf 'No prior handoffs found at %s/. The `session-handoff` skill can start a fresh handoff on demand or when content first arrives. The `session-retrospect` skill is also available.' "$HANDOFF_DIR")
+  ctx=$(printf 'No prior handoffs found at %s/. If the directory does not exist yet, run the session-continuity plugin'\''s setup script (see the plugin README for the path) to bootstrap it. The `session-handoff` skill creates a handoff on demand; `read-branch-handoffs`, `handle-callouts`, and `session-retrospect` are also available.' "$HANDOFF_DIR")
 fi
 
 emit_context "$ctx" 2>/dev/null || true

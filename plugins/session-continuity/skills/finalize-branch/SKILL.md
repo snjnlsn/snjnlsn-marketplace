@@ -112,7 +112,7 @@ If nothing is detected, ask: "Provide a pre-commit alias name (e.g., `mix precom
 Resolve via:
 
 ```
-git log --name-only --pretty=format: <base>..HEAD -- docs/handoffs/
+git log --name-only --pretty=format: <base>..HEAD -- .claude/handoffs/
 ```
 
 Show the resolved list, sorted oldest → newest. Ask: "These are the handoffs I attribute to this branch. Add, remove, or proceed? (`proceed` / `edit`)".
@@ -394,7 +394,7 @@ If a bootstrap flow ran, that prompt completes first so the destination is settl
 Then per-callout walk, one at a time:
 
 ```
-Callout 3 of 6 — from docs/handoffs/<filename>.md
+Callout 3 of 6 — from .claude/handoffs/<filename>.md
 
   ### Discovery 4 — <heading text>
 
@@ -417,7 +417,7 @@ The destination path appears inline next to `add-to-repo-docs` so the user can s
 
 - `add-to-repo-docs` — when the callout describes an API/data contract, project-wide convention, or external-system fact. Default for most callouts.
 - `add-to-inline-code` — when the callout is tightly bound to a specific function/module *the branch added or modified*. Cross-reference `git diff <base>..HEAD` for symbol names that appear in the callout heading or body.
-- `already-captured` — when the heading text appears (case-insensitive substring match) in any code comment or any `docs/` doc *outside* `docs/handoffs/` in the current tree. Flag with: `(I see "<matching text>" already in <path>:<line>)`. The user still confirms — never auto-skip.
+- `already-captured` — when the heading text appears (case-insensitive substring match) in any code comment or any `docs/` doc *outside* `.claude/handoffs/` in the current tree. Flag with: `(I see "<matching text>" already in <path>:<line>)`. The user still confirms — never auto-skip.
 - `dismiss` — for transient facts ("we tried X, it didn't work, we did Y") with no permanent home. Rare default; usually picked manually.
 
 **Routing actions:**
@@ -502,7 +502,7 @@ Detection is text-level — read each file with `Read` (or scan with `Grep` for 
 
 Two pattern families:
 
-- **Handoff path references** — a literal substring matching `docs/handoffs/<filename>` (or the equivalent path discovered from the deletion list, if the project's handoffs live elsewhere). Matches inside comments and docstrings are routed normally; matches inside string literals or path arguments are flagged with a "is this a real code dependency? skip if so" prompt.
+- **Handoff path references** — a literal substring matching `.claude/handoffs/<filename>` (or the equivalent path discovered from the deletion list, if the project's handoffs live elsewhere). Matches inside comments and docstrings are routed normally; matches inside string literals or path arguments are flagged with a "is this a real code dependency? skip if so" prompt.
 - **Callout-identifier references** — a sequence matching `(<pattern>) ?\d+` (e.g., `Discovery 4`, `Decision 12`) inside comments and docstrings, where `<pattern>` is one of the configured callout patterns. Only meaningful when Step 5 extracted a callout with the same identifier; references to identifiers that don't exist in any handoff are noted but typically dismissed.
 
 Each match is reported with file path, line number, and the surrounding 1–3 lines of comment context.
@@ -529,7 +529,7 @@ Each match becomes a tracked **inline-code-doc proposal** that the user resolves
 In-code reference — lib/<path>.ex:42
 
   Source comment context:
-    │ # See docs/handoffs/<filename>.md for the rationale —
+    │ # See .claude/handoffs/<filename>.md for the rationale —
     │ # specifically Discovery 4.
     │ defp build_request(...) do
 
@@ -618,9 +618,11 @@ Apply §Documentation language and tone to every proposed prose edit. Clarity an
 
 Working surface:
 
-- `docs/**` excluding `docs/handoffs/` and `docs/superpowers/**`
+- `docs/**` excluding `docs/superpowers/**`
 - `README.md` (root)
 - `CLAUDE.md` (root, plus any nested `CLAUDE.md` surfaced by the audit phase)
+
+`.claude/**` is out of scope — that tree is skill/plugin state, not project documentation. `.claude/handoffs/` in particular is managed by the session-continuity skills and is touched only by this skill's handoff-cleanup phase (Phase 4), and only to delete specific files in the confirmed list — never the directory or its `README.md`.
 
 ### Step 1 — Build proposal list (four buckets)
 
@@ -664,9 +666,9 @@ Pending changes (not yet committed):
     Reorganized: merged docs/migration.md + docs/post-migration.md
 
 About to delete:
-  docs/handoffs/2026-04-15-200312-initial-spike.md
-  docs/handoffs/2026-04-18-141022-handle-edge-cases.md
-  docs/handoffs/2026-04-22-093041-final-cleanup.md
+  .claude/handoffs/2026-04-15-200312-initial-spike.md
+  .claude/handoffs/2026-04-18-141022-handle-edge-cases.md
+  .claude/handoffs/2026-04-22-093041-final-cleanup.md
 
 Continue? (yes / show diff / cancel)
 ```
@@ -679,7 +681,15 @@ If after the inline-code and repo-doc phases there are **zero proposals approved
 
 ### Step 2 — Delete handoffs
 
-`git rm` each confirmed handoff file. Deletes go into the final commit; history preserved. Only the confirmed list — never `docs/handoffs/` wholesale.
+`git rm` each confirmed handoff file, one path at a time. Deletes go into the final commit; history preserved.
+
+**Strict scope of deletion.** Only the specific files in the confirmed list are removed. Never:
+
+- `git rm -r .claude/handoffs/` or any directory-level operation against the handoff tree.
+- `.claude/handoffs/README.md` (the sentinel that marks the directory skill-managed).
+- Any file in `.claude/handoffs/` that wasn't surfaced as a candidate in Phase 1 Step 1 (e.g., a handoff that belongs to a different branch and just happens to be present in the working tree).
+
+The `.claude/handoffs/` directory and its `README.md` must survive every finalize-branch run. That's the contract that lets the directory stay skill-managed across the full lifecycle — bootstrap (`setup-handoffs.sh`) creates it, the skills are the only writers, and finalize-branch only ever subtracts named files.
 
 ### Step 3 — Stage everything
 
