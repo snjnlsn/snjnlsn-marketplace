@@ -8,9 +8,10 @@ The plugin standardizes on a single **MCP toolkit** (Tidewave + Context7 + Seren
 
 ### Agents
 
-| Path | Overrides | Purpose |
-|---|---|---|
-| `agents/code-reviewer.md` | `superpowers:code-reviewer` | MCP toolkit in tool allowlist + system prompt; replaces `superpowers:code-reviewer` for the plan-alignment / quality review dispatched by `subagent-driven-development`'s code-quality reviewer step |
+No agents are currently overridden. As of `superpowers` v5.1.0 the named
+`superpowers:code-reviewer` agent was removed upstream; its dispatch persona
+now lives in `skills/requesting-code-review/code-reviewer.md` (carrying the
+MCP toolkit preamble) and is dispatched via `Task (general-purpose)`.
 
 ### Skills
 
@@ -21,18 +22,24 @@ The plugin standardizes on a single **MCP toolkit** (Tidewave + Context7 + Seren
 | `skills/writing-plans/` | `superpowers:writing-plans` | Replaces the upstream's "Inventorying existing code" Serena block with a pointer to the unified MCP toolkit, keeping the situational hint that `find_referencing_symbols` is essential for scoping caller-impact |
 | `skills/systematic-debugging/` | `superpowers:systematic-debugging` | Points *Trace Data Flow* and *Find Working Examples* at the unified MCP toolkit, including Context7 for verifying dependency behavior before assuming a bug |
 | `skills/receiving-code-review/` | `superpowers:receiving-code-review` | Routes the YAGNI "find actual usage" check through the MCP toolkit (Context7 for verifying a dependency's API before pushing back, Serena for source when docs leave you unsure) |
-| `skills/subagent-driven-development/` | `superpowers:subagent-driven-development` | Adds scope discipline (>2 files beyond plan = STOP) and golden-file immutability rules to the implementer prompt, allows trivial inline fixes by the code-quality reviewer with explicit guards, and pastes the MCP toolkit preamble into all three dispatch templates so fresh subagents reach for the right tools |
+| `skills/requesting-code-review/` | `superpowers:requesting-code-review` | Inlines the canonical MCP toolkit preamble into `code-reviewer.md` so any subagent dispatched against the template (including SDD's code-quality reviewer step) inherits the MCP guidance without the dispatcher having to paste it |
+| `skills/subagent-driven-development/` | `superpowers:subagent-driven-development` | Adds scope discipline (>2 files beyond plan = STOP) and golden-file immutability rules to the implementer prompt, allows trivial inline fixes by the code-quality reviewer with explicit guards, and pastes the MCP toolkit preamble into the implementer/spec-reviewer dispatch templates so fresh subagents reach for the right tools |
+| `skills/test-driven-development/` | `superpowers:test-driven-development` | Adds an MCP-toolkit pointer for locating the symbol under test, scoping caller impact (`find_referencing_symbols`), and verifying dependency behavior at runtime via Tidewave's `project_eval` instead of speculative `iex` snippets |
+| `skills/dispatching-parallel-agents/` | `superpowers:dispatching-parallel-agents` | Reinforces that every dispatched subagent prompt for code work must paste the **MCP toolkit (canonical)** block (or reuse one of the override prompt templates) so parallel agents don't silently fall back to generic tools |
+| `skills/executing-plans/` | `superpowers:executing-plans` | Adds the MCP-toolkit pointer for code-touching steps; defensive override for runs on harnesses without subagent support |
+| `skills/verification-before-completion/` | `superpowers:verification-before-completion` | Augments the iron-law "run the verification command" guidance with Tidewave-specific verification surfaces (`get_logs` for ignored warnings, `project_eval` for runtime-confirming a claim, `execute_sql_query` for DB-side effects) |
 | `skills/hello-overrides/` | *standalone* | Smoke test — confirms the plugin is loaded |
 
 ### Prompt templates (a third kind of override)
 
-The `subagent-driven-development` override ships three reusable prompt templates that the *dispatcher* pastes into subagent prompts (rather than skills the subagent itself loads):
+Override-shipped prompt templates that the *dispatcher* pastes into subagent prompts (rather than skills the subagent itself loads):
 
-- `skills/subagent-driven-development/implementer-prompt.md`
-- `skills/subagent-driven-development/spec-reviewer-prompt.md`
-- `skills/subagent-driven-development/code-quality-reviewer-prompt.md`
+- `skills/subagent-driven-development/implementer-prompt.md` — inlines the MCP toolkit preamble
+- `skills/subagent-driven-development/spec-reviewer-prompt.md` — inlines the MCP toolkit preamble
+- `skills/subagent-driven-development/code-quality-reviewer-prompt.md` — dispatches `Task (general-purpose)` against `overrides:requesting-code-review/code-reviewer.md` (which carries the preamble); adds SDD-specific check bullets and a "trivial inline fixes" allowance with guards
+- `skills/requesting-code-review/code-reviewer.md` — inlines the MCP toolkit preamble; reused by SDD's code-quality reviewer step and any other code-review dispatch
 
-Each leads with the MCP toolkit preamble and is marked "kept in sync with `overrides:using-overrides`" so drift is detectable on review.
+Each preamble-bearing template is marked "kept in sync with `overrides:using-overrides`" so drift is detectable on review.
 
 Empty directories (`hooks/`, `commands/`) are kept as `.gitkeep` placeholders for future additions.
 

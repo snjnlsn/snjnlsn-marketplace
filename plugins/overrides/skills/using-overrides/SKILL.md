@@ -38,21 +38,28 @@ These are concrete at time of writing — but the **rule is general**: always ch
 | `superpowers:systematic-debugging` | `overrides:systematic-debugging` |
 | `superpowers:writing-plans` | `overrides:writing-plans` |
 | `superpowers:receiving-code-review` | `overrides:receiving-code-review` |
+| `superpowers:requesting-code-review` | `overrides:requesting-code-review` |
 | `superpowers:subagent-driven-development` | `overrides:subagent-driven-development` |
+| `superpowers:test-driven-development` | `overrides:test-driven-development` |
+| `superpowers:dispatching-parallel-agents` | `overrides:dispatching-parallel-agents` |
+| `superpowers:executing-plans` | `overrides:executing-plans` |
+| `superpowers:verification-before-completion` | `overrides:verification-before-completion` |
 
 ### Agents
 
-| Task | Use `subagent_type` | Replaces |
-|---|---|---|
-| Reviewing completed work against plan + standards | `overrides:code-reviewer` | `superpowers:code-reviewer` |
+No agents are currently overridden. As of `superpowers` v5.1.0 the named
+`superpowers:code-reviewer` agent was removed upstream; its dispatch persona
+now lives in `overrides:requesting-code-review/code-reviewer.md` and is
+dispatched via `Task (general-purpose)`.
 
 ### Prompt templates
 
 Some overrides ship reusable prompt templates the dispatcher pastes into subagent prompts (rather than skills the subagent itself loads). These travel as part of the dispatch payload:
 
-- `overrides:subagent-driven-development/implementer-prompt.md`
-- `overrides:subagent-driven-development/spec-reviewer-prompt.md`
-- `overrides:subagent-driven-development/code-quality-reviewer-prompt.md`
+- `overrides:subagent-driven-development/implementer-prompt.md` — inlines the MCP toolkit preamble
+- `overrides:subagent-driven-development/spec-reviewer-prompt.md` — inlines the MCP toolkit preamble
+- `overrides:subagent-driven-development/code-quality-reviewer-prompt.md` — dispatches `Task (general-purpose)` against the template below; adds SDD-specific check bullets and a "trivial inline fixes" allowance
+- `overrides:requesting-code-review/code-reviewer.md` — inlines the MCP toolkit preamble; reused by SDD's code-quality reviewer step and any other code-review dispatch
 
 ## MCP toolkit (canonical)
 
@@ -107,7 +114,7 @@ lines, config keys) and `Read` for non-code files (Markdown, JSON, YAML).
 
 ## Subagent dispatches must include the MCP toolkit preamble
 
-Fresh subagent contexts do not load skills, so they do not see the canonical block above. Every dispatched `Agent` prompt for code work must paste the **MCP toolkit (canonical)** block (or the equivalent text from the agent's own system prompt) at the top of the subagent prompt. The override agent `overrides:code-reviewer` already inlines this block in its system prompt and inherits the full default tool set (no `tools:` allowlist — matching its `superpowers:code-reviewer` parent so trivial inline fixes via `Edit` / Serena's symbolic-edit tools work), so the MCPs are reachable — but paste the preamble anyway in case the agent definition drifts.
+Fresh subagent contexts do not load skills, so they do not see the canonical block above. Every dispatched `Agent` prompt for code work must paste the **MCP toolkit (canonical)** block at the top of the subagent prompt. The override prompt templates under `overrides:subagent-driven-development/` and `overrides:requesting-code-review/code-reviewer.md` already inline the block; reuse them when dispatching reviewers or implementers instead of hand-rolling.
 
 ## Exceptions
 
