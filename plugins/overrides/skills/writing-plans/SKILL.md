@@ -13,7 +13,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
-**Context:** This should be run in a dedicated worktree (created by brainstorming skill).
+**Context:** If working in an isolated worktree, it should have been created via the `superpowers:using-git-worktrees` skill at execution time.
 
 **Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
@@ -31,7 +31,7 @@ Before defining tasks, map out which files will be created or modified and what 
 - Files that change together should live together. Split by responsibility, not by technical layer.
 - In existing codebases, follow established patterns. If the codebase uses large files, don't unilaterally restructure - but if a file you're modifying has grown unwieldy, including a split in the plan is reasonable.
 
-**Inventorying existing code and dependencies:** Use the MCP toolkit defined in `overrides:using-overrides` — Serena's symbolic tools (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) for in-repo navigation, HexDocs for any Hex package whose API the plan touches, Context7 for non-Hex libraries. `find_referencing_symbols` is especially important for scoping a task accurately (Task 3 edits `Foo.bar` → check now whether 1 caller or 40 callers have to move with it). Reserve `Read`/`Grep` for non-code files and text searches that don't correspond to a symbol name.
+**Inventorying existing code and dependencies:** Use the MCP toolkit defined in `overrides:using-overrides` — Serena's symbolic tools (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) for in-repo navigation; for any dependency whose API the plan touches, look up docs first (Tidewave when the dev server is up, otherwise Context7). `find_referencing_symbols` is especially important for scoping a task accurately (Task 3 edits `Foo.bar` → check now whether 1 caller or 40 callers have to move with it). Reserve `Read`/`Grep` for non-code files and text searches that don't correspond to a symbol name.
 
 This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
 
@@ -51,7 +51,7 @@ This structure informs the task decomposition. Each task should produce self-con
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use overrides:subagent-driven-development (recommended) or overrides:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -146,9 +146,9 @@ After saving the plan, offer execution choice:
 **Which approach?"**
 
 **If Subagent-Driven chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
+- **REQUIRED SUB-SKILL:** Use overrides:subagent-driven-development
 - Fresh subagent per task + two-stage review
 
 **If Inline Execution chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
+- **REQUIRED SUB-SKILL:** Use overrides:executing-plans
 - Batch execution with checkpoints for review

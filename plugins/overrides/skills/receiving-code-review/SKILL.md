@@ -96,8 +96,9 @@ IF reviewer suggests "implementing properly":
         identifiers.
     - For a text fragment (log message, route string, config key, HTTP
         path): `Grep`.
-    - Verifying a dependency's documented API before pushing back: HexDocs
-        (`mcp__hexdocs-mcp__search`) for Hex packages, Context7 for others.
+    - Verifying a dependency's documented API before pushing back: Tidewave
+        (`get_docs` / `search_package_docs`) when the dev server is up,
+        otherwise Context7.
 
   IF unused: "This endpoint isn't called. Remove it (YAGNI)?"
   IF used: Then implement properly
