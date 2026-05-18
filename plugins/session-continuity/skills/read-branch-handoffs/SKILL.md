@@ -7,7 +7,7 @@ description: Read every handoff attributable to the current git branch (committe
 
 Load every handoff document attributable to the current git branch and present them in chronological order as session context. This is the sanctioned read path for prior-session handoffs other than the working session's own handoff (which `session-handoff` owns).
 
-`.claude/handoffs/` is a skill-managed directory: outside this skill and `session-handoff`, do not list, read, edit, or delete files there.
+`.session-continuity/handoffs/` is a skill-managed directory: outside this skill and `session-handoff`, do not list, read, edit, or delete files there.
 
 ## When to use
 
@@ -25,7 +25,7 @@ Also activate when the SessionStart hook surfaces a branch-handoffs hint and the
 
 Detect via `git symbolic-ref refs/remotes/origin/HEAD`. Fallback chain: `main` → `master` → ask the user.
 
-If the current branch *is* the base (e.g., currently on `main`), the `<base>..HEAD` filter is meaningless. Drop the branch-scope filter and treat every `.md` file directly under `.claude/handoffs/` as a candidate, sorted chronologically.
+If the current branch *is* the base (e.g., currently on `main`), the `<base>..HEAD` filter is meaningless. Drop the branch-scope filter and treat every `.md` file directly under `.session-continuity/handoffs/` as a candidate, sorted chronologically.
 
 ### Step 2 — Collect candidates
 
@@ -33,14 +33,14 @@ Two sources merged and deduped:
 
 1. **Committed on this branch** —
    ```
-   git log --name-only --diff-filter=AM --pretty=format: <base>..HEAD -- .claude/handoffs/
+   git log --name-only --diff-filter=AM --pretty=format: <base>..HEAD -- .session-continuity/handoffs/
    ```
    `--diff-filter=AM` keeps added and modified files; deleted handoffs are not candidates.
-2. **Uncommitted / untracked in the working tree** — `git status --porcelain -- .claude/handoffs/`. Include modified, added, and untracked `.md` files. Exclude entries marked deleted.
+2. **Uncommitted / untracked in the working tree** — `git status --porcelain -- .session-continuity/handoffs/`. Include modified, added, and untracked `.md` files. Exclude entries marked deleted.
 
 After merging, drop:
 - Non-`.md` files.
-- `.claude/handoffs/README.md` (the sentinel, not a handoff).
+- `.session-continuity/handoffs/README.md` (the sentinel, not a handoff).
 - Any path that no longer exists in the working tree.
 
 ### Step 3 — Sort chronologically
@@ -72,14 +72,14 @@ Never auto-adopt a found handoff as the working handoff — adoption is `session
 - **Read-only.** This skill never writes, edits, renames, or deletes handoffs. Writes route through `session-handoff` or `handle-callouts`; branch-end deletion routes through `finalize-branch`.
 - **Tolerate legacy filenames.** Some handoffs predate the `YYYY-MM-DD-HHMMSS-<author>--<slug>.md` convention; still read them. Migration prompts are `session-handoff`'s job, not this skill's.
 - **Empty result is fine.** Zero handoffs on the branch → report "No handoffs found on this branch" and exit; do not invent context.
-- **Don't list `.claude/handoffs/` from outside this skill.** Even for "just curious" questions, route here so the contract holds.
+- **Don't list `.session-continuity/handoffs/` from outside this skill.** Even for "just curious" questions, route here so the contract holds.
 
 ## Edge cases
 
-- **`.claude/handoffs/` missing.** Report it; suggest the user run the plugin's `scripts/setup-handoffs.sh` (see the plugin README for path).
+- **`.session-continuity/handoffs/` missing.** Report it; suggest the user run the plugin's `scripts/setup-handoffs.sh` (see the plugin README for path).
 - **Only `README.md` present.** Treat as empty.
 - **Base branch undetectable.** Try `main` → `master` → ask the user.
-- **Detached HEAD.** No branch scope to filter against; fall back to "all handoffs in `.claude/handoffs/`" with a note that the listing isn't branch-filtered.
+- **Detached HEAD.** No branch scope to filter against; fall back to "all handoffs in `.session-continuity/handoffs/`" with a note that the listing isn't branch-filtered.
 - **Worktrees.** Operate on `cwd`; the git queries naturally scope to the worktree's HEAD.
 - **Handoff renamed mid-branch** (e.g., by `session-handoff`'s migration flow). `git log` surfaces both old and new names with `--diff-filter=AM` — filter to whichever still exists in the working tree.
 
