@@ -231,7 +231,7 @@ On `yes`:
 3. **Insert `**Author:**`** in the renamed file's body if absent. Detection: any line matching `^\*\*Author:\*\*` between the H1 and the first `##` heading counts as present, regardless of value (don't silently overwrite a manually-set author). Insertion point: after `**Last updated:**` if present, otherwise immediately before the first `##` heading.
 4. **Insert the disclaimer comment** if absent. Detection logic:
    - If a verbatim copy of the HTML disclaimer comment already exists at the top of the file (before the H1), skip the insertion silently. (Still run step 5 below.)
-   - If the file begins with an HTML comment block (`<!--` on the first non-blank line) that is not a verbatim copy of the disclaimer, prompt: `replace` (delete the existing comment and insert the disclaimer) / `keep` (insert the disclaimer above the existing comment — disclaimer stays at position 0, the existing comment moves to position 1) / `skip` (leave the file alone).
+   - If the file begins with an HTML comment block (`<!--` on the first non-blank line) that is not a verbatim copy of the disclaimer, prompt: `replace` (delete the existing comment and insert the disclaimer) / `keep` (insert the disclaimer above the existing comment — disclaimer stays at position 0, the existing comment moves to position 1) / `skip` (leave the disclaimer insertion alone; step 5 still runs).
    - Otherwise insert the disclaimer at the very top of the file, followed by a blank line, then the H1.
 5. **Delete the legacy `> **Auto-generated handoff.**` blockquote** if present anywhere between the H1 and the first metadata field. Its content is fully absorbed by the new HTML comment, so deletion is silent (no prompt).
 
