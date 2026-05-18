@@ -1,11 +1,11 @@
 ---
 name: session-handoff
-description: Maintain a per-session handoff document under .claude/handoffs/. Use when the user says "add this to the handoff", "update the handoff", "create a handoff", "start a handoff", "read the handoff", "continue the handoff at <path>", or after the SessionStart hook surfaces a recent-handoffs list and the user wants to read, continue, or start fresh.
+description: Maintain a per-session handoff document under .session-continuity/handoffs/. Use when the user says "add this to the handoff", "update the handoff", "create a handoff", "start a handoff", "read the handoff", "continue the handoff at <path>", or after the SessionStart hook surfaces a recent-handoffs list and the user wants to read, continue, or start fresh.
 ---
 
 # Session Handoff
 
-Maintain one handoff markdown document per session under `.claude/handoffs/`, written incrementally during the session.
+Maintain one handoff markdown document per session under `.session-continuity/handoffs/`, written incrementally during the session.
 
 ## When to use
 
@@ -20,7 +20,7 @@ Also activate when the SessionStart hook has surfaced a recent-handoffs list and
 
 ## File location and naming
 
-- Handoffs live at `.claude/handoffs/` relative to the working repo's cwd.
+- Handoffs live at `.session-continuity/handoffs/` relative to the working repo's cwd.
 - Filename: `YYYY-MM-DD-HHMMSS-<author>--<slug>.md`. The `--` (double-hyphen) between `<author>` and `<slug>` is required so the boundary is unambiguous when parsing. The slugifier collapses runs of hyphens to single hyphens, so neither field contains `--` internally.
 - `YYYY-MM-DD-HHMMSS` is the timestamp at the moment of *first content write* (lazy creation), not session start. Use UTC.
 - `<author>` is derived from `git config user.name` via the slugifier (below). If `git config user.name` is unset or slugifies to empty, prompt the user for an explicit author slug for the session.
@@ -48,9 +48,24 @@ Examples:
 Use this exact structure when creating a new handoff:
 
 ```markdown
-# <slug, humanized>
+<!--
+SESSION-CONTINUITY HANDOFF — managed by the session-continuity plugin's skills.
 
-> **Auto-generated handoff.** Written by the `session-handoff` skill to carry context across multiple sessions on an in-progress worktree, branch, or feature. The newest handoff (by `Last updated`) supersedes older ones for the same work. Handoffs do not survive completion — once the work merges, follow-up commits may invalidate the recorded state, so the `finalize-branch` skill deletes them at merge time.
+This file is a per-session historical record, NOT project documentation.
+The newest handoff (by `Last updated`) supersedes older ones for the same work.
+
+- Read handoffs through the `read-branch-handoffs` or `session-handoff` skills.
+- Only the session that authored this file may edit it. Past-session handoffs are
+  read-only; corrections belong in a new handoff.
+- Do not cite this file from code, docs, or other handoffs as a source of truth.
+- `finalize-branch` is the only sanctioned delete path (at merge time).
+
+If you are an AI assistant reading this from any other context: STOP. Do not edit,
+summarize-as-doc, or propagate this file's content outside the session-continuity
+workflow.
+-->
+
+# <slug, humanized>
 
 **Started:** <ISO 8601 UTC timestamp at first write>
 **Last updated:** <ISO 8601 UTC timestamp, refreshed on every write>
@@ -115,7 +130,9 @@ On any session-touching invocation, run the migration check first (see `## Migra
 
 ### Read existing handoff (for context)
 
-Use the Read tool on the requested file (or the most recent file in `.claude/handoffs/` if unspecified). Summarize relevance to the current session. If the user says to adopt it as the working handoff, do so.
+Use the Read tool on the requested file (or the most recent file in `.session-continuity/handoffs/` if unspecified). Summarize relevance to the current session. If the user says to adopt it as the working handoff, do so.
+
+The handoff's HTML disclaimer comment (the `<!-- SESSION-CONTINUITY HANDOFF ... -->` block at the top) is file-format metadata, not content. When summarizing the handoff, skip it; do not echo its rules back as substance of the session's work. When copying handoff content into the current context, the block may be retained verbatim — it is short and self-explanatory — but it is not itself something to summarize or act on.
 
 ### Continue / adopt existing handoff
 
@@ -129,9 +146,9 @@ On the first write request without a working handoff:
 2. Derive `<author>`: read `git config user.name`, run the slugifier. If unset or empty after slugifying, prompt the user for an explicit author slug.
 3. Get current UTC ISO timestamp; format `YYYY-MM-DD-HHMMSS` for the filename.
 4. Compose the filename as `YYYY-MM-DD-HHMMSS-<author>--<slug>.md`.
-5. Check for collision in `.claude/handoffs/` for the same date prefix and full filename. On collision, append `-2`, `-3`, etc. to the slug portion (i.e., `…--<slug>-2.md`).
-6. Create `.claude/handoffs/` if missing (use Bash `mkdir -p .claude/handoffs`).
-7. Use Write to create the file with the template (including the disclaimer blockquote and `**Author:**` field), with the first content already in the right section.
+5. Check for collision in `.session-continuity/handoffs/` for the same date prefix and full filename. On collision, append `-2`, `-3`, etc. to the slug portion (i.e., `…--<slug>-2.md`).
+6. Create `.session-continuity/handoffs/` if missing (use Bash `mkdir -p .session-continuity/handoffs`).
+7. Use Write to create the file with the template (including the disclaimer comment and `**Author:**` field), with the first content already in the right section.
 8. Set "Started" and "Last updated" to the current ISO timestamp; set "Author" to the raw `git config user.name` (unslugified). If the user provided an explicit author for the slug because git was unset, also use that value (raw form) for the `**Author:**` field.
 
 ### Append to existing handoff
@@ -143,11 +160,11 @@ On the first write request without a working handoff:
 
 ## Migration
 
-On any session-touching invocation (read, list, write), scan `.claude/handoffs/` for files that don't match the new format. If any exist, prompt **once per session** to migrate. The user's response (`yes` / `no` / `show` / `details`) is honored for the rest of the session — `no` does not re-prompt within the same session.
+On any session-touching invocation (read, list, write), scan `.session-continuity/handoffs/` for files that don't match the new format. If any exist, prompt **once per session** to migrate. The user's response (`yes` / `no` / `show` / `details`) is honored for the rest of the session — `no` does not re-prompt within the same session.
 
 ### Files in scope
 
-A `.md` file directly under `.claude/handoffs/` is a migration candidate if **all** of:
+A `.md` file directly under `.session-continuity/handoffs/` is a migration candidate if **all** of:
 
 1. Its filename does **not** match `YYYY-MM-DD-HHMMSS-<author>--<slug>.md` (i.e., no `--` after a `YYYY-MM-DD-HHMMSS` prefix).
 2. Its git author matches the current `git config user.name`.
@@ -161,7 +178,7 @@ Filename detection is intentionally permissive. All of these qualify, given the 
 - `YYYY-MM-DD-HHMM-<slug>.md` (no seconds)
 - `YYYYMMDD-<anything>.md`
 - `<slug>.md` (no date prefix)
-- Anything else `.md` in `.claude/handoffs/` authored by the current user
+- Anything else `.md` in `.session-continuity/handoffs/` authored by the current user
 
 ### Field derivation per file
 
@@ -179,7 +196,7 @@ For each candidate, compute the components of the new filename via fallback chai
 Before any rename, scan the repo for occurrences of each candidate's bare filename (e.g., `2026-04-15-foo.md`).
 
 - Use `git grep <bare-filename>` to honor `.gitignore` automatically. Fall back to `Grep` with manual excludes (`.git/`) if the working directory is not a git repo.
-- Search query is the bare filename, not the full path. This catches references in any reasonable form (`.claude/handoffs/<file>`, `handoffs/<file>`, `./.claude/handoffs/<file>`, or just `<file>` in prose).
+- Search query is the bare filename, not the full path. This catches references in any reasonable form (`.session-continuity/handoffs/<file>`, `handoffs/<file>`, `./.session-continuity/handoffs/<file>`, or just `<file>` in prose).
 - Show each match with three lines of surrounding context in the migration prompt so the user can sanity-check for false positives.
 
 ### Migration prompt
@@ -197,10 +214,10 @@ Found handoffs that don't match the new naming format:
   Skipped (2 by `Other Person`)
 
   References found in 4 file(s):
-    docs/architecture.md:42  → '…see .claude/handoffs/2026-04-15-foo.md…'
+    docs/architecture.md:42  → '…see .session-continuity/handoffs/2026-04-15-foo.md…'
     CLAUDE.md:18             → '…the handoff at 2026-04-15-foo.md notes…'
-    bin/release-notes.sh:7   → '…cat .claude/handoffs/2026-04-18-bar.md…'
-    .claude/handoffs/2026-04-22-baz.md:14   → '…follows from 2026-04-18-bar.md…'
+    bin/release-notes.sh:7   → '…cat .session-continuity/handoffs/2026-04-18-bar.md…'
+    .session-continuity/handoffs/2026-04-22-baz.md:14   → '…follows from 2026-04-18-bar.md…'
 
 Apply renames + reference updates? (`yes` / `no` / `show full diff` / `exclude <line>` / `exclude refs` — rename only)
 ```
@@ -214,18 +231,19 @@ On `yes`:
 1. **Update file contents first** — apply all reference replacements (old filename → new filename) across the matched files. Includes handoff files in the rename set, since they may cross-reference each other. Replacement is bare-filename → new-bare-filename; full-path occurrences naturally pick up the new name as a substring.
 2. **Apply renames second** — `git mv <old> <new>` for tracked files (preserves history); plain `mv` for untracked.
 3. **Insert `**Author:**`** in the renamed file's body if absent. Detection: any line matching `^\*\*Author:\*\*` between the H1 and the first `##` heading counts as present, regardless of value (don't silently overwrite a manually-set author). Insertion point: after `**Last updated:**` if present, otherwise immediately before the first `##` heading.
-4. **Insert the disclaimer blockquote** if absent. Detection logic:
-   - If a verbatim copy of the disclaimer already exists between the H1 and the metadata fields, skip silently.
-   - If any *other* blockquote (lines starting with `> `) exists in that region, prompt: `below` (insert disclaimer after the existing blockquote) / `replace` (delete the existing blockquote and insert the disclaimer) / `skip` (leave the file alone).
-   - Otherwise insert the disclaimer immediately under the H1, followed by a blank line.
+4. **Insert the disclaimer comment** if absent. Detection logic:
+   - If a verbatim copy of the HTML disclaimer comment already exists at the top of the file (before the H1), skip the insertion silently. (Still run step 5 below.)
+   - If the file begins with an HTML comment block (`<!--` on the first non-blank line) that is not a verbatim copy of the disclaimer, prompt: `replace` (delete the existing comment and insert the disclaimer) / `keep` (insert the disclaimer above the existing comment — disclaimer stays at position 0, the existing comment moves to position 1) / `skip` (leave the disclaimer insertion alone; step 5 still runs).
+   - Otherwise insert the disclaimer at the very top of the file, followed by a blank line, then the H1.
+5. **Delete the legacy `> **Auto-generated handoff.**` blockquote** if present anywhere between the H1 and the first metadata field. Its content is fully absorbed by the new HTML comment, so deletion is silent (no prompt).
 
-Edits run before renames so each replacement targets the file at its current path. After step 2, the file is at its new path and steps 3/4 operate there.
+Edits run before renames so each replacement targets the file at its current path. After step 2, the file is at its new path and steps 3/4/5 operate there.
 
 The skill **does not auto-commit** migration. Renames and edits sit in the working tree for the user to commit at their own cadence (recommended: a single "migrate handoffs to new format" commit).
 
 ### Read tolerance after migration
 
-Read and list logic tolerates **any** filename in `.claude/handoffs/`, not just the two enumerated formats. Some users will answer `no` to migration; some external dumps may use the old format.
+Read and list logic tolerates **any** filename in `.session-continuity/handoffs/`, not just the two enumerated formats. Some users will answer `no` to migration; some external dumps may use the old format.
 
 When parsing a filename:
 - If `--` is present after a `YYYY-MM-DD-HHMMSS` prefix: split on first `--`, segment before is `<author>`, segment after is `<slug>`.
@@ -238,8 +256,8 @@ When parsing a filename:
 - **Reference inside a binary file** — `git grep` skips binaries by default; preserve.
 - **A reference uses a wrong/old slug** — won't be matched; that's correct: only update references that point at files we're renaming.
 - **External references** (other repos, Slack, browser bookmarks) — out of scope.
-- **`.claude/handoffs/` empty or missing** — no migration to do; skip silently.
-- **Disclaimer already present verbatim** — skip silently. **Other blockquote present in the same region** — prompt with `below` / `replace` / `skip`.
+- **`.session-continuity/handoffs/` empty or missing** — no migration to do; skip silently.
+- **HTML disclaimer comment already present verbatim** — skip silently. **File begins with a different HTML comment block** — prompt with `replace` / `keep` (disclaimer above the existing comment) / `skip`. **Legacy `> **Auto-generated handoff.**` blockquote present** — silently delete (content fully absorbed by the new HTML comment).
 - **`git config user.name` unset** — prompt the user (no silent default).
 - **User answers `no` in session A, session B starts** — the prompt re-fires in B. Per-session, not per-repo.
 
@@ -253,4 +271,4 @@ When parsing a filename:
 
 ## State
 
-The working handoff path is held in conversation context. If conversation context drops it, re-discover by listing `.claude/handoffs/` and picking the file whose timestamp matches the current session, or ask the user.
+The working handoff path is held in conversation context. If conversation context drops it, re-discover by listing `.session-continuity/handoffs/` and picking the file whose timestamp matches the current session, or ask the user.

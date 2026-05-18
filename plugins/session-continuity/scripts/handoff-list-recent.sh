@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # SessionStart hook helper.
-# Lists up to MAX most recent files in $cwd/.claude/handoffs/ sorted by mtime,
+# Lists up to MAX most recent files in $cwd/.session-continuity/handoffs/ sorted by mtime,
 # and emits a SessionStart additionalContext payload pointing Claude at
 # the session-continuity skills (read-branch-handoffs, session-handoff,
 # handle-callouts, session-retrospect).
@@ -10,7 +10,7 @@ set -euo pipefail
 # Always exits 0. On any internal error, emits no context (still exits 0)
 # so the session is never blocked.
 
-HANDOFF_DIR=".claude/handoffs"
+HANDOFF_DIR=".session-continuity/handoffs"
 MAX=5
 
 emit_context() {

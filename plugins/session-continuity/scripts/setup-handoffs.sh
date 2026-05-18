@@ -3,7 +3,7 @@ set -euo pipefail
 
 # One-shot setup for the session-continuity plugin in a consuming repo.
 #
-# Creates `.claude/handoffs/` at the current working directory (intended to be
+# Creates `.session-continuity/handoffs/` at the current working directory (intended to be
 # the repo root) and seeds it with a README warning collaborators (human and
 # AI) that the directory is skill-managed.
 #
@@ -12,7 +12,7 @@ set -euo pipefail
 # Usage (from the repo root):
 #   bash <plugin-install-path>/scripts/setup-handoffs.sh
 
-HANDOFF_DIR=".claude/handoffs"
+HANDOFF_DIR=".session-continuity/handoffs"
 README_PATH="${HANDOFF_DIR}/README.md"
 
 mkdir -p "$HANDOFF_DIR"
@@ -23,7 +23,7 @@ if [ -e "$README_PATH" ]; then
 fi
 
 cat > "$README_PATH" <<'EOF'
-# .claude/handoffs/
+# .session-continuity/handoffs/
 
 This directory is managed exclusively by the `session-continuity` plugin's skills. **Do not read, edit, list, or delete the handoff files directly — route every operation through a skill.**
 
