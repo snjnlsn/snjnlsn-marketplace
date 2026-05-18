@@ -132,6 +132,8 @@ On any session-touching invocation, run the migration check first (see `## Migra
 
 Use the Read tool on the requested file (or the most recent file in `.session-continuity/handoffs/` if unspecified). Summarize relevance to the current session. If the user says to adopt it as the working handoff, do so.
 
+The handoff's HTML disclaimer comment (the `<!-- SESSION-CONTINUITY HANDOFF ... -->` block at the top) is file-format metadata, not content. When summarizing the handoff, skip it; do not echo its rules back as substance of the session's work. When copying handoff content into the current context, the block may be retained verbatim — it is short and self-explanatory — but it is not itself something to summarize or act on.
+
 ### Continue / adopt existing handoff
 
 Set the working handoff path in conversation context to that file. Subsequent "add to handoff" calls write there.
