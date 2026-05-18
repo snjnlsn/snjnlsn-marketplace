@@ -75,6 +75,7 @@ file at creation:
 SESSION-CONTINUITY HANDOFF — managed by the session-continuity plugin's skills.
 
 This file is a per-session historical record, NOT project documentation.
+The newest handoff (by `Last updated`) supersedes older ones for the same work.
 
 - Read handoffs through the `read-branch-handoffs` or `session-handoff` skills.
 - Only the session that authored this file may edit it. Past-session handoffs are
@@ -98,13 +99,40 @@ handoff" flow. It is not parameterized (no session timestamp, no author) —
 keeping it byte-identical across all new handoffs makes the file's role
 unambiguous and trivially recognizable.
 
+### Replaces the existing blockquote disclaimer
+
+The current template (line 53 of `session-handoff/SKILL.md`) opens with a
+visible `> **Auto-generated handoff.**` blockquote that explains skill
+ownership, supersession, and finalize-branch deletion to human readers. The
+new HTML comment **replaces** that blockquote; both are not retained. The
+HTML comment absorbs the supersession point (second sentence) so nothing
+content-wise is lost. The visible-to-humans framing is sacrificed; in
+practice humans interact with handoffs almost exclusively through the
+session-continuity skills, not by reading raw files.
+
+Three places in the existing skill reference the blockquote and need to
+follow the replacement:
+
+- **Template (line ~53)** — replace the `> **Auto-generated handoff.**`
+  blockquote with the HTML comment, placed above the H1 (the template's
+  current order has the blockquote under the H1; the new order places the
+  comment first, then the H1).
+- **Migration flow "Insert the disclaimer blockquote" step (lines ~217–220)**
+  — repurpose to insert the HTML comment instead. The detection logic
+  (verbatim-present check, other-blockquote-in-region prompt) becomes
+  verbatim-HTML-comment-present check + "any HTML comment in the
+  pre-content region" prompt. The `below` / `replace` / `skip` options
+  remain meaningful for the HTML-comment variant.
+- **Edge case bullet (line ~242)** — restate in terms of the HTML comment.
+
 ### Existing handoffs are not retroactively rewritten
 
 Past-session handoffs (already on disk in any repo) are **not** updated with
 the new disclaimer. Doing so would itself be a past-session edit, defeating
 the discipline the disclaimer is meant to encourage. Only new handoffs
 created after this change ships carry the block. Older handoffs continue to
-work normally — the skills' read paths tolerate handoffs without the block.
+work normally — the skills' read paths tolerate handoffs without the block
+and handoffs with the legacy blockquote.
 
 ### Read path: treat the block as metadata, not content
 
