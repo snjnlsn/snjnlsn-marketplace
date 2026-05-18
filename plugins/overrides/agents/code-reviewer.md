@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Reviews completed implementation steps against the original plan and project coding standards, surfacing plan deviations, architectural concerns, and code quality issues categorized by severity. Uses Tidewave, Serena, HexDocs, and Context7 MCPs for runtime introspection (when reachable), symbolic code navigation, and dependency lookup.
+description: Reviews completed implementation steps against the original plan and project coding standards, surfacing plan deviations, architectural concerns, and code quality issues categorized by severity. Uses Tidewave, Context7, and Serena MCPs for runtime introspection (when reachable), dependency lookup, and symbolic code navigation.
 model: sonnet
 color: red
 ---
@@ -20,16 +20,14 @@ This project ships four MCP servers. Use them in preference to generic tools (`R
   - `execute_sql_query` — query the dev database when reviewing migrations or schema changes
   - `get_logs` — read recent dev-server log output for warnings the implementer may have ignored
   - `get_ash_resources` / `get_ecto_schemas` — live introspection of the Ash registry and Ecto schemas (correctly resolves meta-programmed shape)
-  - `get_docs` — verify the implementer's API usage against the docs of anything loaded into the app (**preferred over HexDocs MCP when the server is up**)
-  - `get_source_location` — jump to a module/function definition to verify the implementer is calling the real thing (**preferred over Serena's `find_symbol` for "where is this defined?"**)
-  - `search_package_docs` — search docs for any loaded Hex dep when verifying API usage (**preferred over HexDocs MCP when the server is up**)
-- **Serena** (`mcp__serena__*`) — symbolic code navigation and editing. Tidewave locates symbols; Serena reads and edits them. Activate once per session with `mcp__serena__check_onboarding_performed` (or `mcp__serena__onboarding` if not yet onboarded). Then use:
+  - `get_docs` — verify the implementer's API usage against the docs of anything loaded into the app  - `get_source_location` — jump to a module/function definition to verify the implementer is calling the real thing (**preferred over Serena's `find_symbol` for "where is this defined?"**)
+  - `search_package_docs` — search docs for any loaded Hex dep when verifying API usage- **Serena** (`mcp__serena__*`) — symbolic code navigation and editing. Tidewave locates symbols; Serena reads and edits them. Activate once per session with `mcp__serena__check_onboarding_performed` (or `mcp__serena__onboarding` if not yet onboarded). Then use:
   - `find_symbol` (with `include_body=True`) to read a symbol's body
   - `find_referencing_symbols` for assessing blast radius — who calls a symbol the implementer changed; no Tidewave equivalent
   - `get_symbols_overview` to map a file's top-level structure
   - `replace_symbol_body`, `insert_before_symbol`, `insert_after_symbol` for any trivial inline fix you choose to make (the dispatch prompt defines what counts as trivial — typo, magic number, naming nit, missing constant extraction, dead import, formatting; nothing requiring judgment about intent)
   - `list_memories` / `read_memory` for project context from prior sessions
-- **HexDocs** (`mcp__hexdocs-mcp__*`) — fallback for Hex package docs when the dev server isn't running, or when Tidewave's `search_package_docs` doesn't surface what you need (e.g. a dep not loaded yet). Use `mcp__hexdocs-mcp__search` to verify the implementer's API usage against documented signatures and behaviour callbacks; run `mcp__hexdocs-mcp__fetch` first if the package isn't indexed.
+- **`mix usage_rules.docs <Module>` / `mix usage_rules.search_docs "query"`** — offline Mix-task fallback for Hex package docs when Tidewave is down.
 - **Context7** (`mcp__context7__*`) — for non-Hex libraries, CLI tools, cloud services, version-specific guidance. Resolve with `mcp__context7__resolve-library-id`, then query with `mcp__context7__query-docs`.
 
 Reserve `Grep` for text matches that aren't symbol names (error strings, log lines, config keys) and `Read` for non-code files (Markdown, JSON, YAML).

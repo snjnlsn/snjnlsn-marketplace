@@ -37,13 +37,11 @@ MCPs only if Tidewave fails or the server is down.
   - `get_ash_resources` / `get_ecto_schemas` — live introspection of the
     Ash registry and Ecto schemas
   - `get_docs` — verify the implementer's API usage against module/function
-    docs (**preferred over HexDocs MCP when the server is up**)
-  - `get_source_location` — jump to a module/function definition to confirm
+    docs  - `get_source_location` — jump to a module/function definition to confirm
     the implementer is calling the real thing (**preferred over Serena's
     `find_symbol` for "where is this defined?"**)
   - `search_package_docs` — search docs for any loaded Hex dep
-    (**preferred over HexDocs MCP when the server is up**)
-- **Serena** (`mcp__serena__*`) — symbolic code navigation. Tidewave locates
+   - **Serena** (`mcp__serena__*`) — symbolic code navigation. Tidewave locates
   symbols; Serena reads them. First call
   `mcp__serena__check_onboarding_performed` to activate (or
   `mcp__serena__onboarding` if not yet onboarded). Then prefer
@@ -51,11 +49,8 @@ MCPs only if Tidewave fails or the server is down.
   reading whole files. For "is this called elsewhere?" or "does this match
   the pattern in the rest of the codebase?", use `find_referencing_symbols`
   rather than `Grep` (no Tidewave equivalent).
-- **HexDocs** (`mcp__hexdocs-mcp__*`) — fallback for Hex package docs when
-  the dev server isn't running, or for deps not loaded into the app. Use
-  `mcp__hexdocs-mcp__search` to verify the implementer's API usage against
-  documented signatures and behaviour callbacks; run `mcp__hexdocs-mcp__fetch`
-  first if the package isn't indexed yet.
+- **`mix usage_rules.docs <Module>` / `mix usage_rules.search_docs "query"`**
+  — offline Mix-task fallback for Hex package docs when Tidewave is down.
 - **Context7** (`mcp__context7__*`) — for non-Hex libraries, CLI tools,
   cloud services, version-specific guidance. Resolve with
   `mcp__context7__resolve-library-id`, then query with
@@ -63,8 +58,9 @@ MCPs only if Tidewave fails or the server is down.
 
 **Do not** fall back to `WebSearch` or speculative code (e.g. `iex` snippets
 to guess how a stdlib function behaves) before trying these. Look it up via
-Tidewave's `get_docs` / `search_package_docs` if the server is up, HexDocs
-MCP otherwise, and read the source via Serena (in-repo modules and `deps/`).
+Tidewave's `get_docs` / `search_package_docs` if the server is up, Context7
+otherwise. Read source via Serena (in-repo modules and `deps/`) only if docs
+leave you unsure.
 
 **In addition to standard code quality concerns, the reviewer should check:**
 - Does each file have one clear responsibility with a well-defined interface?

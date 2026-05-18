@@ -7,7 +7,7 @@ description: Use when about to invoke any skill or dispatch any subagent that ha
 
 ## The problem this solves
 
-The `overrides` plugin ships drop-in replacements for selected upstream skills and agents. Each override keeps the same `name:` as its upstream counterpart (so it reads as the same capability) but adds project-specific guidance — primarily MCP-first navigation (Serena, HexDocs, Context7) for both parent contexts and dispatched subagents.
+The `overrides` plugin ships drop-in replacements for selected upstream skills and agents. Each override keeps the same `name:` as its upstream counterpart (so it reads as the same capability) but adds project-specific guidance — primarily MCP-first navigation (Tidewave, Context7, Serena) for both parent contexts and dispatched subagents.
 
 Because Claude Code namespaces plugins rather than overriding them, both versions appear in the skill/agent list (`superpowers:brainstorming` **and** `overrides:brainstorming`). There is **no built-in precedence rule**. Without this skill, Claude picks arbitrarily — and any upstream cross-reference like "invoke `superpowers:writing-plans`" silently bypasses the override.
 
@@ -60,50 +60,47 @@ This block is the single source of truth for MCP tool guidance across the
 overrides plugin. Other override skills, agents, and prompt templates
 reference it by name and should not paraphrase or diverge.
 
-This project ships four MCP servers. Use them in preference to generic tools
-(`Read`/`Grep`/`Glob`), `WebSearch`, or speculative code (e.g. `iex` snippets
-to guess how a function behaves).
+This project ships three MCP servers (Tidewave, Context7, Serena). Use them
+in preference to generic tools (`Read`/`Grep`/`Glob`), `WebSearch`, or
+speculative code (e.g. `iex` snippets to guess how a function behaves).
 
-**Tidewave is the primary tool whenever it's reachable.** It introspects the
-actual loaded application — including dynamically-defined Phoenix/Ash modules
-that static tools can't see. Always reach for Tidewave first for: evaluating
-code, querying the database, reading dev logs, looking up docs, finding source
-locations, or introspecting Ash/Ecto schemas. Fall back to the static MCPs
-only if Tidewave fails or the server is down.
+**Reading a dependency — docs first, source as fallback.** Understand the dep
+through docs before opening its source. Drop into Serena on `deps/` only when
+docs leave you unsure.
 
-- **Tidewave** (`mcp__tidewave__*`) — runtime introspection of the running
-  Phoenix app:
-  - `project_eval` — run Elixir in the app context (real config, real repos,
-    real Ash registry — replaces `mix run -e` and ad-hoc `iex` snippets)
-  - `execute_sql_query` — query the dev database
-  - `get_logs` — read recent dev-server log output
-  - `get_ash_resources` / `get_ecto_schemas` — live introspection of the
-    Ash registry and Ecto schemas (correctly resolves meta-programmed shape)
-  - `get_docs` — module/function docs for anything loaded into the app
-    (**preferred over HexDocs MCP when the server is up**)
-  - `get_source_location` — jump to a module/function definition
-    (**preferred over Serena's `find_symbol` for "where is this defined?"**)
-  - `search_package_docs` — search docs for any loaded Hex dep
-    (**preferred over HexDocs MCP when the server is up**)
-- **Serena** (`mcp__serena__*`) — symbolic code navigation and editing.
-  Tidewave locates symbols; Serena reads them and edits them in place.
-  Activate once per session with `mcp__serena__check_onboarding_performed`
-  (or `mcp__serena__onboarding` if not yet onboarded). Then use:
+**Reading project code — Serena directly.** No docs detour. Serena is how you
+read and edit this codebase.
+
+### Docs (any library — Hex packages, third-party libs, CLIs, cloud services), in fallback order
+
+1. **Tidewave** — `mcp__tidewave__get_docs` for a specific module/function;
+   `mcp__tidewave__search_package_docs` to grep across deps. Use when the dev
+   server is up. Authoritative because it reads the *loaded* application,
+   including dynamically-defined Phoenix/Ash modules that static tools can't see.
+2. **Context7** — `mcp__context7__resolve-library-id` → `mcp__context7__query-docs`.
+   For anything Tidewave doesn't surface or can't reach. Use even for well-known
+   libraries; training data drifts.
+3. **`mix usage_rules.docs <Module>` / `mix usage_rules.search_docs "query"`**
+   — offline Mix-task fallback when both MCPs are unavailable.
+
+### Runtime introspection (eval Elixir, query dev DB, read logs, list Ash resources / Ecto schemas)
+
+**Tidewave only.** `mcp__tidewave__project_eval`, `execute_sql_query`,
+`get_logs`, `get_ash_resources`, `get_ecto_schemas`, `get_source_location`.
+No fallback — start the dev server.
+
+### Source code
+
+- **Project code** → **Serena** (`mcp__serena__*`) directly. Activate once per
+  session with `mcp__serena__check_onboarding_performed` (or
+  `mcp__serena__onboarding` if not yet onboarded). Then use:
   - `find_symbol` (with `include_body=True`) to read a symbol's body
   - `find_referencing_symbols` to find callers/usages — no Tidewave equivalent
-  - `replace_symbol_body`, `insert_before_symbol`, `insert_after_symbol`
-    for symbolic edits
   - `get_symbols_overview` to map a file's top-level structure
+  - `replace_symbol_body`, `insert_before_symbol`, `insert_after_symbol` for edits
   - `list_memories` / `read_memory` for project context from prior sessions
-- **HexDocs** (`mcp__hexdocs-mcp__*`) — fallback for Hex package docs when
-  the dev server isn't running, or when Tidewave's `search_package_docs`
-  doesn't surface what you need (e.g. a dep not loaded yet). Use
-  `mcp__hexdocs-mcp__search`; run `mcp__hexdocs-mcp__fetch` first if the
-  package isn't indexed.
-- **Context7** (`mcp__context7__*`) — for non-Hex libraries, CLI tools,
-  cloud services, version-specific guidance. Resolve with
-  `mcp__context7__resolve-library-id`, then query with
-  `mcp__context7__query-docs`.
+- **Dependency code (under `deps/`)** → same Serena tools, but only after docs
+  left you unsure. Don't lead with source for deps.
 
 Reserve `Grep` for text matches that aren't symbol names (error strings, log
 lines, config keys) and `Read` for non-code files (Markdown, JSON, YAML).

@@ -34,13 +34,11 @@ Task tool (general-purpose):
       - `get_ash_resources` / `get_ecto_schemas` — live introspection of
         the Ash registry and Ecto schemas
       - `get_docs` — module/function docs for anything loaded into the app
-        (**preferred over HexDocs MCP when the server is up**)
-      - `get_source_location` — jump to a module/function definition
+             - `get_source_location` — jump to a module/function definition
         (**preferred over Serena's `find_symbol` for "where is this
         defined?"**)
       - `search_package_docs` — search docs for any loaded Hex dep
-        (**preferred over HexDocs MCP when the server is up**)
-    - **Serena** (`mcp__serena__*`) — symbolic code navigation and editing.
+           - **Serena** (`mcp__serena__*`) — symbolic code navigation and editing.
       Tidewave locates symbols; Serena reads and edits them. First call
       `mcp__serena__check_onboarding_performed` to activate (or
       `mcp__serena__onboarding` if not yet onboarded). Then prefer
@@ -48,10 +46,8 @@ Task tool (general-purpose):
       over reading whole files. Use `find_referencing_symbols` to scope your
       changes — it tells you who calls a symbol you're modifying (no
       Tidewave equivalent).
-    - **HexDocs** (`mcp__hexdocs-mcp__*`) — fallback for Hex package docs
-      when the dev server isn't running, or for deps not loaded into the app.
-      Use `mcp__hexdocs-mcp__search`; run `mcp__hexdocs-mcp__fetch` first if
-      the package isn't indexed yet.
+    - **`mix usage_rules.docs <Module>` / `mix usage_rules.search_docs "query"`**
+      — offline Mix-task fallback for Hex package docs when Tidewave is down.
     - **Context7** (`mcp__context7__*`) — for non-Hex libraries, CLI tools,
       cloud services, version-specific guidance. Resolve with
       `mcp__context7__resolve-library-id`, then query with
@@ -59,9 +55,10 @@ Task tool (general-purpose):
 
     **Do not** guess at a dependency's API or run speculative code to figure
     it out. Look it up via Tidewave's `get_docs` / `search_package_docs` if
-    the server is up, HexDocs MCP otherwise, and read source via Serena
-    (in-repo modules and `deps/`). If you can't confirm the API after
-    consulting these MCPs, escalate as NEEDS_CONTEXT rather than guessing.
+    the server is up, Context7 otherwise. Read source via Serena (in-repo
+    modules and `deps/`) only if docs leave you unsure. If you can't confirm
+    the API after consulting these MCPs, escalate as NEEDS_CONTEXT rather
+    than guessing.
 
     ## Task Description
 

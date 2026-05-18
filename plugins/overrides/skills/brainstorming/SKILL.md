@@ -103,7 +103,7 @@ digraph brainstorming {
 - Explore the current structure before proposing changes. Follow existing patterns.
 - Where existing code has problems that affect the work (e.g., a file that's grown too large, unclear boundaries, tangled responsibilities), include targeted improvements as part of the design - the way a good developer improves code they're working in.
 - Don't propose unrelated refactoring. Stay focused on what serves the current goal.
-- **Use the MCP toolkit defined in `overrides:using-overrides` for all code exploration and dependency lookup** — Serena's symbolic tools for in-repo navigation (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`), HexDocs for Hex packages, Context7 for other libraries. Reserve `Grep`/`Read` for text matches and non-code files.
+- **Use the MCP toolkit defined in `overrides:using-overrides` for all code exploration and dependency lookup** — Serena's symbolic tools for in-repo navigation (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`); for dependency docs, Tidewave when the dev server is up, otherwise Context7, with `mix usage_rules` as offline fallback. Reserve `Grep`/`Read` for text matches and non-code files.
 
 ## After the Design
 
