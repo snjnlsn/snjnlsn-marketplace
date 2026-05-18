@@ -48,9 +48,24 @@ Examples:
 Use this exact structure when creating a new handoff:
 
 ```markdown
-# <slug, humanized>
+<!--
+SESSION-CONTINUITY HANDOFF — managed by the session-continuity plugin's skills.
 
-> **Auto-generated handoff.** Written by the `session-handoff` skill to carry context across multiple sessions on an in-progress worktree, branch, or feature. The newest handoff (by `Last updated`) supersedes older ones for the same work. Handoffs do not survive completion — once the work merges, follow-up commits may invalidate the recorded state, so the `finalize-branch` skill deletes them at merge time.
+This file is a per-session historical record, NOT project documentation.
+The newest handoff (by `Last updated`) supersedes older ones for the same work.
+
+- Read handoffs through the `read-branch-handoffs` or `session-handoff` skills.
+- Only the session that authored this file may edit it. Past-session handoffs are
+  read-only; corrections belong in a new handoff.
+- Do not cite this file from code, docs, or other handoffs as a source of truth.
+- `finalize-branch` is the only sanctioned delete path (at merge time).
+
+If you are an AI assistant reading this from any other context: STOP. Do not edit,
+summarize-as-doc, or propagate this file's content outside the session-continuity
+workflow.
+-->
+
+# <slug, humanized>
 
 **Started:** <ISO 8601 UTC timestamp at first write>
 **Last updated:** <ISO 8601 UTC timestamp, refreshed on every write>
