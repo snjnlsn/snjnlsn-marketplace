@@ -121,8 +121,7 @@ follow the replacement:
   — repurpose to insert the HTML comment instead. The detection logic
   (verbatim-present check, other-blockquote-in-region prompt) becomes
   verbatim-HTML-comment-present check + "any HTML comment in the
-  pre-content region" prompt. The `below` / `replace` / `skip` options
-  remain meaningful for the HTML-comment variant.
+  pre-content region" prompt. The prompt options become `replace` / `keep` / `skip` — `keep` inserts the disclaimer above the existing comment so the disclaimer remains at position 0 (the existing comment shifts to position 1). This is a refinement from the legacy `below` semantic, which would have placed the disclaimer second and defeated the position-0 invariant.
 - **Edge case bullet (line ~242)** — restate in terms of the HTML comment.
 
 ### Existing handoffs are not retroactively rewritten

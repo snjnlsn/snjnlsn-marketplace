@@ -230,8 +230,8 @@ On `yes`:
 2. **Apply renames second** — `git mv <old> <new>` for tracked files (preserves history); plain `mv` for untracked.
 3. **Insert `**Author:**`** in the renamed file's body if absent. Detection: any line matching `^\*\*Author:\*\*` between the H1 and the first `##` heading counts as present, regardless of value (don't silently overwrite a manually-set author). Insertion point: after `**Last updated:**` if present, otherwise immediately before the first `##` heading.
 4. **Insert the disclaimer comment** if absent. Detection logic:
-   - If a verbatim copy of the HTML disclaimer comment already exists at the top of the file (before the H1), skip the insertion silently. (Still process the legacy-blockquote cleanup below.)
-   - If an unrecognized HTML comment exists in that position, prompt: `replace` (delete the existing comment and insert the disclaimer) / `keep` (insert the disclaimer below the existing comment) / `skip` (leave the file alone).
+   - If a verbatim copy of the HTML disclaimer comment already exists at the top of the file (before the H1), skip the insertion silently. (Still run step 5 below.)
+   - If the file begins with an HTML comment block (`<!--` on the first non-blank line) that is not a verbatim copy of the disclaimer, prompt: `replace` (delete the existing comment and insert the disclaimer) / `keep` (insert the disclaimer above the existing comment — disclaimer stays at position 0, the existing comment moves to position 1) / `skip` (leave the file alone).
    - Otherwise insert the disclaimer at the very top of the file, followed by a blank line, then the H1.
 5. **Delete the legacy `> **Auto-generated handoff.**` blockquote** if present anywhere between the H1 and the first metadata field. Its content is fully absorbed by the new HTML comment, so deletion is silent (no prompt).
 
@@ -255,7 +255,7 @@ When parsing a filename:
 - **A reference uses a wrong/old slug** — won't be matched; that's correct: only update references that point at files we're renaming.
 - **External references** (other repos, Slack, browser bookmarks) — out of scope.
 - **`.session-continuity/handoffs/` empty or missing** — no migration to do; skip silently.
-- **HTML disclaimer comment already present verbatim** — skip silently. **Other HTML comment present at the top of the file** — prompt with `replace` / `keep` / `skip`. **Legacy `> **Auto-generated handoff.**` blockquote present** — silently delete (content fully absorbed by the new HTML comment).
+- **HTML disclaimer comment already present verbatim** — skip silently. **File begins with a different HTML comment block** — prompt with `replace` / `keep` (disclaimer above the existing comment) / `skip`. **Legacy `> **Auto-generated handoff.**` blockquote present** — silently delete (content fully absorbed by the new HTML comment).
 - **`git config user.name` unset** — prompt the user (no silent default).
 - **User answers `no` in session A, session B starts** — the prompt re-fires in B. Per-session, not per-repo.
 
