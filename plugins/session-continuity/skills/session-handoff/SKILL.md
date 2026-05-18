@@ -1,11 +1,11 @@
 ---
 name: session-handoff
-description: Maintain a per-session handoff document under docs/handoffs/. Use when the user says "add this to the handoff", "update the handoff", "create a handoff", "start a handoff", "read the handoff", "continue the handoff at <path>", or after the SessionStart hook surfaces a recent-handoffs list and the user wants to read, continue, or start fresh.
+description: Maintain a per-session handoff document under .claude/handoffs/. Use when the user says "add this to the handoff", "update the handoff", "create a handoff", "start a handoff", "read the handoff", "continue the handoff at <path>", or after the SessionStart hook surfaces a recent-handoffs list and the user wants to read, continue, or start fresh.
 ---
 
 # Session Handoff
 
-Maintain one handoff markdown document per session under `docs/handoffs/`, written incrementally during the session.
+Maintain one handoff markdown document per session under `.claude/handoffs/`, written incrementally during the session.
 
 ## When to use
 
@@ -20,7 +20,7 @@ Also activate when the SessionStart hook has surfaced a recent-handoffs list and
 
 ## File location and naming
 
-- Handoffs live at `docs/handoffs/` relative to the working repo's cwd.
+- Handoffs live at `.claude/handoffs/` relative to the working repo's cwd.
 - Filename: `YYYY-MM-DD-HHMMSS-<author>--<slug>.md`. The `--` (double-hyphen) between `<author>` and `<slug>` is required so the boundary is unambiguous when parsing. The slugifier collapses runs of hyphens to single hyphens, so neither field contains `--` internally.
 - `YYYY-MM-DD-HHMMSS` is the timestamp at the moment of *first content write* (lazy creation), not session start. Use UTC.
 - `<author>` is derived from `git config user.name` via the slugifier (below). If `git config user.name` is unset or slugifies to empty, prompt the user for an explicit author slug for the session.
@@ -115,7 +115,7 @@ On any session-touching invocation, run the migration check first (see `## Migra
 
 ### Read existing handoff (for context)
 
-Use the Read tool on the requested file (or the most recent file in `docs/handoffs/` if unspecified). Summarize relevance to the current session. If the user says to adopt it as the working handoff, do so.
+Use the Read tool on the requested file (or the most recent file in `.claude/handoffs/` if unspecified). Summarize relevance to the current session. If the user says to adopt it as the working handoff, do so.
 
 ### Continue / adopt existing handoff
 
@@ -129,8 +129,8 @@ On the first write request without a working handoff:
 2. Derive `<author>`: read `git config user.name`, run the slugifier. If unset or empty after slugifying, prompt the user for an explicit author slug.
 3. Get current UTC ISO timestamp; format `YYYY-MM-DD-HHMMSS` for the filename.
 4. Compose the filename as `YYYY-MM-DD-HHMMSS-<author>--<slug>.md`.
-5. Check for collision in `docs/handoffs/` for the same date prefix and full filename. On collision, append `-2`, `-3`, etc. to the slug portion (i.e., `…--<slug>-2.md`).
-6. Create `docs/handoffs/` if missing (use Bash `mkdir -p docs/handoffs`).
+5. Check for collision in `.claude/handoffs/` for the same date prefix and full filename. On collision, append `-2`, `-3`, etc. to the slug portion (i.e., `…--<slug>-2.md`).
+6. Create `.claude/handoffs/` if missing (use Bash `mkdir -p .claude/handoffs`).
 7. Use Write to create the file with the template (including the disclaimer blockquote and `**Author:**` field), with the first content already in the right section.
 8. Set "Started" and "Last updated" to the current ISO timestamp; set "Author" to the raw `git config user.name` (unslugified). If the user provided an explicit author for the slug because git was unset, also use that value (raw form) for the `**Author:**` field.
 
@@ -143,11 +143,11 @@ On the first write request without a working handoff:
 
 ## Migration
 
-On any session-touching invocation (read, list, write), scan `docs/handoffs/` for files that don't match the new format. If any exist, prompt **once per session** to migrate. The user's response (`yes` / `no` / `show` / `details`) is honored for the rest of the session — `no` does not re-prompt within the same session.
+On any session-touching invocation (read, list, write), scan `.claude/handoffs/` for files that don't match the new format. If any exist, prompt **once per session** to migrate. The user's response (`yes` / `no` / `show` / `details`) is honored for the rest of the session — `no` does not re-prompt within the same session.
 
 ### Files in scope
 
-A `.md` file directly under `docs/handoffs/` is a migration candidate if **all** of:
+A `.md` file directly under `.claude/handoffs/` is a migration candidate if **all** of:
 
 1. Its filename does **not** match `YYYY-MM-DD-HHMMSS-<author>--<slug>.md` (i.e., no `--` after a `YYYY-MM-DD-HHMMSS` prefix).
 2. Its git author matches the current `git config user.name`.
@@ -161,7 +161,7 @@ Filename detection is intentionally permissive. All of these qualify, given the 
 - `YYYY-MM-DD-HHMM-<slug>.md` (no seconds)
 - `YYYYMMDD-<anything>.md`
 - `<slug>.md` (no date prefix)
-- Anything else `.md` in `docs/handoffs/` authored by the current user
+- Anything else `.md` in `.claude/handoffs/` authored by the current user
 
 ### Field derivation per file
 
@@ -179,7 +179,7 @@ For each candidate, compute the components of the new filename via fallback chai
 Before any rename, scan the repo for occurrences of each candidate's bare filename (e.g., `2026-04-15-foo.md`).
 
 - Use `git grep <bare-filename>` to honor `.gitignore` automatically. Fall back to `Grep` with manual excludes (`.git/`) if the working directory is not a git repo.
-- Search query is the bare filename, not the full path. This catches references in any reasonable form (`docs/handoffs/<file>`, `handoffs/<file>`, `./docs/handoffs/<file>`, or just `<file>` in prose).
+- Search query is the bare filename, not the full path. This catches references in any reasonable form (`.claude/handoffs/<file>`, `handoffs/<file>`, `./.claude/handoffs/<file>`, or just `<file>` in prose).
 - Show each match with three lines of surrounding context in the migration prompt so the user can sanity-check for false positives.
 
 ### Migration prompt
@@ -197,10 +197,10 @@ Found handoffs that don't match the new naming format:
   Skipped (2 by `Other Person`)
 
   References found in 4 file(s):
-    docs/architecture.md:42  → '…see docs/handoffs/2026-04-15-foo.md…'
+    docs/architecture.md:42  → '…see .claude/handoffs/2026-04-15-foo.md…'
     CLAUDE.md:18             → '…the handoff at 2026-04-15-foo.md notes…'
-    bin/release-notes.sh:7   → '…cat docs/handoffs/2026-04-18-bar.md…'
-    docs/handoffs/2026-04-22-baz.md:14   → '…follows from 2026-04-18-bar.md…'
+    bin/release-notes.sh:7   → '…cat .claude/handoffs/2026-04-18-bar.md…'
+    .claude/handoffs/2026-04-22-baz.md:14   → '…follows from 2026-04-18-bar.md…'
 
 Apply renames + reference updates? (`yes` / `no` / `show full diff` / `exclude <line>` / `exclude refs` — rename only)
 ```
@@ -225,7 +225,7 @@ The skill **does not auto-commit** migration. Renames and edits sit in the worki
 
 ### Read tolerance after migration
 
-Read and list logic tolerates **any** filename in `docs/handoffs/`, not just the two enumerated formats. Some users will answer `no` to migration; some external dumps may use the old format.
+Read and list logic tolerates **any** filename in `.claude/handoffs/`, not just the two enumerated formats. Some users will answer `no` to migration; some external dumps may use the old format.
 
 When parsing a filename:
 - If `--` is present after a `YYYY-MM-DD-HHMMSS` prefix: split on first `--`, segment before is `<author>`, segment after is `<slug>`.
@@ -238,7 +238,7 @@ When parsing a filename:
 - **Reference inside a binary file** — `git grep` skips binaries by default; preserve.
 - **A reference uses a wrong/old slug** — won't be matched; that's correct: only update references that point at files we're renaming.
 - **External references** (other repos, Slack, browser bookmarks) — out of scope.
-- **`docs/handoffs/` empty or missing** — no migration to do; skip silently.
+- **`.claude/handoffs/` empty or missing** — no migration to do; skip silently.
 - **Disclaimer already present verbatim** — skip silently. **Other blockquote present in the same region** — prompt with `below` / `replace` / `skip`.
 - **`git config user.name` unset** — prompt the user (no silent default).
 - **User answers `no` in session A, session B starts** — the prompt re-fires in B. Per-session, not per-repo.
@@ -253,4 +253,4 @@ When parsing a filename:
 
 ## State
 
-The working handoff path is held in conversation context. If conversation context drops it, re-discover by listing `docs/handoffs/` and picking the file whose timestamp matches the current session, or ask the user.
+The working handoff path is held in conversation context. If conversation context drops it, re-discover by listing `.claude/handoffs/` and picking the file whose timestamp matches the current session, or ask the user.

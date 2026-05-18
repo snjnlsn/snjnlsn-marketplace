@@ -130,7 +130,7 @@ This step ensures a writable target exists before scanning. Even when the eventu
 ### 2. Identify the target callout
 
 - Scan the working handoff first for a heading-text match against the user's reference.
-- If no match in the working handoff, scan the branch's older handoffs read-only via `git log <base>..HEAD --name-only --pretty=format: -- docs/handoffs/`. Read each candidate; look for matching headings or body-substance matches.
+- If no match in the working handoff, scan the branch's older handoffs read-only via `git log <base>..HEAD --name-only --pretty=format: -- .claude/handoffs/`. Read each candidate; look for matching headings or body-substance matches.
 - Surface candidates: `Did you mean ### Known issue — JWT clock skew … (in <handoff path>)? confirm / that's a different one / cancel.`
 - If zero candidates surface, ask the user to name the heading or paste the body.
 
@@ -187,7 +187,7 @@ Callouts follow the "Language and tone" rules from `session-handoff` SKILL.md (l
 
 - **Reading an old handoff ≠ writing target.** Callouts always go to the working handoff for the current session. If the user is reading a prior handoff and wants to capture a callout, the write goes to *this* session's working handoff — lazy-create one if needed, don't append to the file being read.
 
-- **Conversation context drops the working handoff path** mid-session. Step 1 re-invokes `session-handoff`, which handles re-discovery (list `docs/handoffs/`, match session timestamp, or ask).
+- **Conversation context drops the working handoff path** mid-session. Step 1 re-invokes `session-handoff`, which handles re-discovery (list `.claude/handoffs/`, match session timestamp, or ask).
 
 ## Coordination with `session-handoff`
 
