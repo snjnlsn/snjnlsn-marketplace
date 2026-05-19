@@ -13,10 +13,10 @@ Task tool (general-purpose):
     (Kept in sync with **MCP toolkit (canonical)** in `overrides:using-overrides`.
     If you find drift, update this block to match.)
 
-    This project has four MCP servers. Use them in preference to
-    `Read`/`Grep`/`Glob` for code navigation, and instead of `WebSearch` or
-    speculative code (e.g. `iex` snippets to guess how a stdlib function
-    works) for understanding dependencies.
+    This project has three MCP servers (Tidewave, Context7, Serena). Use
+    them in preference to `Read`/`Grep`/`Glob` for code navigation, and
+    instead of `WebSearch` or speculative code (e.g. `iex` snippets to guess
+    how a stdlib function works) for understanding dependencies.
 
     **Tidewave is the primary tool whenever it's reachable.** It introspects
     the actual loaded application — including dynamically-defined Phoenix/Ash
@@ -34,11 +34,11 @@ Task tool (general-purpose):
       - `get_ash_resources` / `get_ecto_schemas` — live introspection of
         the Ash registry and Ecto schemas
       - `get_docs` — module/function docs for anything loaded into the app
-             - `get_source_location` — jump to a module/function definition
+      - `get_source_location` — jump to a module/function definition
         (**preferred over Serena's `find_symbol` for "where is this
         defined?"**)
       - `search_package_docs` — search docs for any loaded Hex dep
-           - **Serena** (`mcp__serena__*`) — symbolic code navigation and editing.
+    - **Serena** (`mcp__serena__*`) — symbolic code navigation and editing.
       Tidewave locates symbols; Serena reads and edits them. First call
       `mcp__serena__check_onboarding_performed` to activate (or
       `mcp__serena__onboarding` if not yet onboarded). Then prefer
@@ -59,6 +59,19 @@ Task tool (general-purpose):
     modules and `deps/`) only if docs leave you unsure. If you can't confirm
     the API after consulting these MCPs, escalate as NEEDS_CONTEXT rather
     than guessing.
+
+    **Don't use `python3 -c "..."` or `bash -c "..."` with multi-line bodies.**
+    Claude Code's Bash validator parses arguments with tree-sitter and can't
+    reliably validate those — multi-line bodies surface `Unhandled node type:
+    string`, and a newline followed by `#` inside a quoted argument trips the
+    `Newline followed by # inside a quoted argument can hide arguments from
+    path validation` check. Both prompts fire upstream of the permissions
+    allowlist, so adding entries won't suppress them and the controller has
+    to click through every one. If `Grep` / `Glob` / `Read` can't cover what
+    you need, `Write` the script to a scratch file (`/tmp/scratch.py`,
+    `/tmp/scratch.sh`) and execute it as `python3 /tmp/scratch.py` or `bash
+    /tmp/scratch.sh` — the executable path becomes a single token the
+    validator can check.
 
     ## Task Description
 
