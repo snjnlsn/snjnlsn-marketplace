@@ -66,6 +66,19 @@ Task tool (general-purpose):
     source via Serena (in-repo modules and `deps/`) only if docs leave you
     unsure.
 
+    **Don't use `python3 -c "..."` or `bash -c "..."` with multi-line bodies.**
+    Claude Code's Bash validator parses arguments with tree-sitter and can't
+    reliably validate those — multi-line bodies surface `Unhandled node type:
+    string`, and a newline followed by `#` inside a quoted argument trips the
+    `Newline followed by # inside a quoted argument can hide arguments from
+    path validation` check. Both prompts fire upstream of the permissions
+    allowlist, so adding entries won't suppress them and the controller has
+    to click through every one. If `Grep` / `Glob` / `Read` can't cover what
+    you need, `Write` the script to a scratch file (`/tmp/scratch.py`,
+    `/tmp/scratch.sh`) and execute it as `python3 /tmp/scratch.py` or `bash
+    /tmp/scratch.sh` — the executable path becomes a single token the
+    validator can check.
+
     ## What Was Implemented
 
     {DESCRIPTION}
