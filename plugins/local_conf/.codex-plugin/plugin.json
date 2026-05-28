@@ -1,0 +1,30 @@
+{
+  "name": "local_conf",
+  "version": "2.0.0",
+  "description": "Personal local configuration hooks and helper scripts.",
+  "author": {
+    "name": "Sanjay Nelson"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "configuration",
+    "hooks",
+    "local"
+  ],
+  "interface": {
+    "displayName": "Local Config",
+    "shortDescription": "Personal hooks and helper scripts.",
+    "longDescription": "Personal local configuration for hook-driven setup, Serena activation, auto-approval, cleanup, and shell safety helpers. Codex currently catalogs the plugin metadata; Claude Code remains the primary consumer for these hooks.",
+    "developerName": "Sanjay Nelson",
+    "category": "Productivity",
+    "capabilities": [
+      "Configuration"
+    ],
+    "defaultPrompt": [
+      "Inspect local configuration.",
+      "Review available helper hooks.",
+      "Check local setup notes."
+    ],
+    "brandColor": "#7C3AED"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "session-continuity",
+  "version": "1.2.0",
+  "description": "Per-session and per-branch documentation lifecycle.",
+  "author": {
+    "name": "Sanjay Nelson"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "handoffs",
+    "sessions",
+    "documentation"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Session Continuity",
+    "shortDescription": "Handoffs, callouts, retrospects, and branch finalization.",
+    "longDescription": "Maintains per-session handoffs, captures callouts, reads branch context, supports retrospectives, and finalizes branches by harvesting session notes into durable project documentation.",
+    "developerName": "Sanjay Nelson",
+    "category": "Productivity",
+    "capabilities": [
+      "Skills",
+      "Documentation"
+    ],
+    "defaultPrompt": [
+      "Create a session handoff.",
+      "Read branch handoffs.",
+      "Finalize this branch."
+    ],
+    "brandColor": "#0F766E"
+  }
+}
