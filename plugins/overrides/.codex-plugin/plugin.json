@@ -1,0 +1,32 @@
+{
+  "name": "overrides",
+  "version": "1.3.0",
+  "description": "Personal plugin overrides that customize and hook into other agent plugins.",
+  "author": {
+    "name": "Sanjay Nelson"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "skills",
+    "overrides",
+    "workflow"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Overrides",
+    "shortDescription": "MCP-aware workflow skill overrides.",
+    "longDescription": "Personal overrides for agent workflow skills, including routing guidance and MCP-aware variants for planning, debugging, review, verification, and subagent workflows.",
+    "developerName": "Sanjay Nelson",
+    "category": "Productivity",
+    "capabilities": [
+      "Skills",
+      "Workflow"
+    ],
+    "defaultPrompt": [
+      "Use overrides for workflow guidance.",
+      "Run the hello-overrides smoke test.",
+      "Review the MCP toolkit guidance."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

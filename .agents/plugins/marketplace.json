@@ -1,0 +1,44 @@
+{
+  "name": "snjnlsn-marketplace",
+  "interface": {
+    "displayName": "snjnlsn Marketplace"
+  },
+  "plugins": [
+    {
+      "name": "overrides",
+      "source": {
+        "source": "local",
+        "path": "./plugins/overrides"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "local_conf",
+      "source": {
+        "source": "local",
+        "path": "./plugins/local_conf"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "session-continuity",
+      "source": {
+        "source": "local",
+        "path": "./plugins/session-continuity"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
