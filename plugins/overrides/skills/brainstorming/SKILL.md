@@ -93,6 +93,9 @@ digraph brainstorming {
 
 **Design for isolation and clarity:**
 
+- Use the repo's quality guidance from AGENTS.md/CLAUDE.md, project docs, or an
+  explicitly selected quality skill while shaping architecture, component
+  boundaries, module responsibilities, and testing strategy.
 - Break the system into smaller units that each have one clear purpose, communicate through well-defined interfaces, and can be understood and tested independently
 - For each unit, you should be able to answer: what does it do, how do you use it, and what does it depend on?
 - Can someone understand what a unit does without reading its internals? Can you change the internals without breaking consumers? If not, the boundaries need work.
@@ -103,7 +106,18 @@ digraph brainstorming {
 - Explore the current structure before proposing changes. Follow existing patterns.
 - Where existing code has problems that affect the work (e.g., a file that's grown too large, unclear boundaries, tangled responsibilities), include targeted improvements as part of the design - the way a good developer improves code they're working in.
 - Don't propose unrelated refactoring. Stay focused on what serves the current goal.
-- **Use the MCP toolkit defined in `overrides:using-overrides` for all code exploration and dependency lookup** — Serena's symbolic tools for in-repo navigation (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`); for dependency docs, Tidewave when the dev server is up, otherwise Context7, with `mix usage_rules` as offline fallback. Reserve `Grep`/`Read` for text matches and non-code files.
+- **Use the Project Tooling (Full) guidance defined in `using-overrides` for all code exploration and dependency lookup** — Serena's symbolic tools for in-repo navigation (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`); for dependency docs, Tidewave when the dev server is up, otherwise Context7, with `mix usage_rules` as offline fallback. Reserve `Grep`/`Read` for text matches and non-code files.
+
+**Domain-specific exploration:**
+
+- If the idea depends on a domain skill or project convention, use that guidance
+  during context exploration.
+- Treat required domain source material as spec input before implementation
+  planning.
+- Keep brainstorming in charge of user intent, scope, alternatives, and design
+  approval. Let the domain guidance supply specialized conventions, gotchas,
+  testing expectations, slice guidance, and gates without redirecting the work
+  outside the approved scope.
 
 ## After the Design
 
@@ -121,6 +135,7 @@ After writing the spec document, look at it with fresh eyes:
 2. **Internal consistency:** Do any sections contradict each other? Does the architecture match the feature descriptions?
 3. **Scope check:** Is this focused enough for a single implementation plan, or does it need decomposition?
 4. **Ambiguity check:** Could any requirement be interpreted two different ways? If so, pick one and make it explicit.
+5. **No open decisions:** Specs must not contain "Open Decisions", unresolved questions, or decision placeholders. If you are tempted to add one, stop before saving/committing the spec, raise the decision to the user with your recommended resolution, get approval, and write the approved answer into the spec. Open decisions mean brainstorming is not done.
 
 Fix any issues inline. No need to re-review — just fix and move on.
 

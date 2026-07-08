@@ -2,6 +2,12 @@
 
 Personal Claude Code plugin that customizes and hooks into other Claude Code plugins. Part of the [`snjnlsn-marketplace`](../../README.md).
 
+> **Deprecated:** The copied Superpowers skill overrides in this plugin are
+> deprecated. Prefer the upstream `superpowers` plugin directly, with
+> `snjnlsn-dev-config:superpowers-caveat` layered in so agents prefer and adhere
+> to repo-local instructions and opinionated skills for reading, writing, and
+> reviewing code.
+
 ## What's inside
 
 The plugin standardizes on a single **MCP toolkit** (Tidewave + Context7 + Serena) defined canonically in `skills/using-overrides/SKILL.md`. Every other override either references that block (skills loaded into the parent context) or carries a "kept in sync with" copy of it (agents and dispatch prompt templates, which fresh contexts can't load skills into).

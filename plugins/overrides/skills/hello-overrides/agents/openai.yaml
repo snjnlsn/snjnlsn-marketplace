@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hello Overrides"
+  short_description: "Smoke test the overrides overlay"
+  default_prompt: "Use $hello-overrides to confirm the overrides skill overlay is available."

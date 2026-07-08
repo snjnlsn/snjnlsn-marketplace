@@ -3,7 +3,7 @@ set -euo pipefail
 
 # SessionStart hook helper.
 # Lists up to MAX most recent files in $cwd/.session-continuity/handoffs/ sorted by mtime,
-# and emits a SessionStart additionalContext payload pointing Claude at
+# and emits a SessionStart additionalContext payload pointing Codex at
 # the session-continuity skills (read-branch-handoffs, session-handoff,
 # handle-callouts, session-retrospect).
 #

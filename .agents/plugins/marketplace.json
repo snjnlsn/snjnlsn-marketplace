@@ -17,10 +17,10 @@
       "category": "Productivity"
     },
     {
-      "name": "local_conf",
+      "name": "snjnlsn-dev-config",
       "source": {
         "source": "local",
-        "path": "./plugins/local_conf"
+        "path": "./plugins/snjnlsn-dev-config"
       },
       "policy": {
         "installation": "AVAILABLE",

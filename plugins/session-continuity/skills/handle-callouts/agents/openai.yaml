@@ -1,0 +1,4 @@
+interface:
+  display_name: "Handle Callouts"
+  short_description: "Capture durable session findings"
+  default_prompt: "Use $handle-callouts to save this finding as a session callout."

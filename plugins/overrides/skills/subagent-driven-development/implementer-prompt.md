@@ -8,70 +8,14 @@ Task tool (general-purpose):
   prompt: |
     You are implementing Task N: [task name]
 
-    ## MCP Tools Available — Prefer These Over Generic Tools or Web Search
+    ## Project Tooling
 
-    (Kept in sync with **MCP toolkit (canonical)** in `overrides:using-overrides`.
-    If you find drift, update this block to match.)
-
-    This project has three MCP servers (Tidewave, Context7, Serena). Use
-    them in preference to `Read`/`Grep`/`Glob` for code navigation, and
-    instead of `WebSearch` or speculative code (e.g. `iex` snippets to guess
-    how a stdlib function works) for understanding dependencies.
-
-    **Tidewave is the primary tool whenever it's reachable.** It introspects
-    the actual loaded application — including dynamically-defined Phoenix/Ash
-    modules that static tools can't see. Always reach for Tidewave first for:
-    evaluating code, querying the database, reading dev logs, looking up
-    docs, finding source locations, or introspecting Ash/Ecto schemas. Fall
-    back to the static MCPs only if Tidewave fails or the server is down.
-
-    - **Tidewave** (`mcp__tidewave__*`) — runtime introspection of the running
-      Phoenix app:
-      - `project_eval` — run Elixir in the app context (replaces ad-hoc
-        `iex` snippets when validating an API call)
-      - `execute_sql_query` — query the dev database
-      - `get_logs` — read recent dev-server log output
-      - `get_ash_resources` / `get_ecto_schemas` — live introspection of
-        the Ash registry and Ecto schemas
-      - `get_docs` — module/function docs for anything loaded into the app
-      - `get_source_location` — jump to a module/function definition
-        (**preferred over Serena's `find_symbol` for "where is this
-        defined?"**)
-      - `search_package_docs` — search docs for any loaded Hex dep
-    - **Serena** (`mcp__serena__*`) — symbolic code navigation and editing.
-      Tidewave locates symbols; Serena reads and edits them. First call
-      `mcp__serena__check_onboarding_performed` to activate (or
-      `mcp__serena__onboarding` if not yet onboarded). Then prefer
-      `get_symbols_overview`, `find_symbol`, and `find_referencing_symbols`
-      over reading whole files. Use `find_referencing_symbols` to scope your
-      changes — it tells you who calls a symbol you're modifying (no
-      Tidewave equivalent).
-    - **`mix usage_rules.docs <Module>` / `mix usage_rules.search_docs "query"`**
-      — offline Mix-task fallback for Hex package docs when Tidewave is down.
-    - **Context7** (`mcp__context7__*`) — for non-Hex libraries, CLI tools,
-      cloud services, version-specific guidance. Resolve with
-      `mcp__context7__resolve-library-id`, then query with
-      `mcp__context7__query-docs`.
-
-    **Do not** guess at a dependency's API or run speculative code to figure
-    it out. Look it up via Tidewave's `get_docs` / `search_package_docs` if
-    the server is up, Context7 otherwise. Read source via Serena (in-repo
-    modules and `deps/`) only if docs leave you unsure. If you can't confirm
-    the API after consulting these MCPs, escalate as NEEDS_CONTEXT rather
-    than guessing.
-
-    **Don't use `python3 -c "..."` or `bash -c "..."` with multi-line bodies.**
-    Claude Code's Bash validator parses arguments with tree-sitter and can't
-    reliably validate those — multi-line bodies surface `Unhandled node type:
-    string`, and a newline followed by `#` inside a quoted argument trips the
-    `Newline followed by # inside a quoted argument can hide arguments from
-    path validation` check. Both prompts fire upstream of the permissions
-    allowlist, so adding entries won't suppress them and the controller has
-    to click through every one. If `Grep` / `Glob` / `Read` can't cover what
-    you need, `Write` the script to a scratch file (`/tmp/scratch.py`,
-    `/tmp/scratch.sh`) and execute it as `python3 /tmp/scratch.py` or `bash
-    /tmp/scratch.sh` — the executable path becomes a single token the
-    validator can check.
+    Activate Serena before code work and prefer symbolic tools for project
+    code. Use Tidewave for runtime introspection when the dev server is up.
+    Read dependency docs through Tidewave, Context7, or `mix usage_rules.*`
+    before reading dependency source. Use text/file tools for Markdown, JSON,
+    YAML, config, and literal string search. Avoid multi-line `python3 -c` or
+    `bash -c`; write scratch scripts to `/tmp` when needed.
 
     ## Task Description
 
@@ -80,6 +24,15 @@ Task tool (general-purpose):
     ## Context
 
     [Scene-setting: where this fits, dependencies, architectural context]
+
+    ## Repo Context Payload
+
+    [Paste task-relevant project guidance here. Fresh subagents do not reliably
+    load repo instructions or skills on their own.]
+
+    [Include quality expectations for readability, naming, module boundaries,
+    restrained abstraction, domain model design, behavior-focused tests, and any
+    task-specific compatibility, migration, security, or integration gates.]
 
     ## Before You Begin
 
@@ -165,6 +118,8 @@ Task tool (general-purpose):
     - Is this my best work?
     - Are names clear and accurate (match what things do, not how they work)?
     - Is the code clean and maintainable?
+    - Does it satisfy the relevant project quality expectations for
+      readability, boundaries, abstraction, domain usage, and tests?
 
     **Discipline:**
     - Did I avoid overbuilding (YAGNI)?

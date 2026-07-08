@@ -1,0 +1,4 @@
+interface:
+  display_name: "Requesting Code Review"
+  short_description: "Dispatch focused code review"
+  default_prompt: "Use $requesting-code-review to review these changes against the requirements."

@@ -107,14 +107,14 @@ Skip any step = lying, not verifying
 
 ## Verification Surfaces Beyond Test/Build Output
 
-The iron law is "run the verification command, read the output." On this project that command isn't always the test or build runner. Use the MCP toolkit defined in `overrides:using-overrides` to access verification surfaces a generic shell command can't reach:
+The iron law is "run the verification command, read the output." The right command isn't always the test or build runner. Use the Project Tooling (Full) guidance defined in `using-overrides` to access verification surfaces a generic shell command can't reach:
 
 | To verify… | Use | Instead of |
 |---|---|---|
 | The implementer's code actually runs and returns what was claimed | Tidewave `project_eval` against the live dev app | Re-reading the code and hoping |
 | A claimed DB-side effect happened (insert, update, schema change) | Tidewave `execute_sql_query` against the dev DB | Trusting the migration "ran" |
 | The app accepted the code change cleanly | Tidewave `get_logs` for recent warnings / errors the implementer may have ignored | "Compiled, must be fine" |
-| An Ash resource / Ecto schema is shaped as claimed | Tidewave `get_ash_resources` / `get_ecto_schemas` | Reading the source and guessing what's loaded |
+| A loaded resource, schema, or model is shaped as claimed | Tidewave resource/schema inspection tools | Reading the source and guessing what's loaded |
 | The implementer is calling the real API, not a near-miss | Tidewave `get_source_location` or `get_docs` (Context7 for non-Hex) | Letting a typo'd function name pass review |
 
 These don't replace running the test suite — they catch the failure modes the test suite was never written to catch (silent log warnings, half-migrated state, fictional API calls that nonetheless type-check). If you're about to claim "verified" on work that touched runtime, schemas, or external deps, at least one of the above should be in your evidence.

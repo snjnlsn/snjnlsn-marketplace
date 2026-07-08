@@ -8,24 +8,32 @@ Use this template when dispatching a code quality reviewer subagent.
 
 ```
 Task tool (general-purpose):
-  Use template at overrides:requesting-code-review/code-reviewer.md
+  Use template at requesting-code-review/code-reviewer.md
 
   DESCRIPTION: [task summary, from implementer's report]
-  PLAN_OR_REQUIREMENTS: Task N from [plan-file]
+  PLAN_OR_REQUIREMENTS: Task N from [plan-file], plus the Repo Context Payload:
+    relevant project quality expectations and any task-specific domain,
+    compatibility, migration, security, or integration obligations for this
+    slice.
   BASE_SHA: [commit before task]
   HEAD_SHA: [current commit]
 ```
 
-The MCP toolkit preamble is already inlined in
-`overrides:requesting-code-review/code-reviewer.md`, so any subagent
-dispatched against that template inherits the MCP guidance automatically. Do
-not re-paste it here.
+The concise project-tooling preamble is already inlined in
+`requesting-code-review/code-reviewer.md`, so any subagent dispatched against
+that template inherits the project-tooling guidance automatically. Do not
+re-paste it here.
 
 **In addition to standard code quality concerns, the reviewer should check:**
+- Does the code satisfy the relevant project standards for readability, domain
+  naming, restrained abstraction, idiomatic implementation, clear boundaries,
+  and behavior-focused tests?
 - Does each file have one clear responsibility with a well-defined interface?
 - Are units decomposed so they can be understood and tested independently?
 - Is the implementation following the file structure from the plan?
 - Did this implementation create new files that are already large, or significantly grow existing files? (Don't flag pre-existing file sizes — focus on what this change contributed.)
+- Did the implementation preserve any task-specific compatibility,
+  migration, fixture, policy, or verification requirements?
 
 **Code reviewer returns:** Strengths, Issues (Critical/Important/Minor), Assessment
 
@@ -38,8 +46,8 @@ implementer — but only under these guards:
   no edits outside the changed surface).
 - No scope expansion: don't add features, refactor adjacent code, or rename
   symbols beyond the trivial fix.
-- After the fix, run the relevant tests AND `mix compile` (or the project's
-  equivalent build/typecheck) and confirm both pass before reporting.
+- After the fix, run the relevant tests and the project's equivalent
+  build/typecheck, and confirm both pass before reporting.
 - Report the inline fixes explicitly in the review output so the controller
   sees what changed.
 

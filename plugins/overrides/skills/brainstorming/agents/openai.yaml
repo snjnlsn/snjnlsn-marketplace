@@ -1,0 +1,4 @@
+interface:
+  display_name: "Brainstorming"
+  short_description: "Turn ideas into approved specs"
+  default_prompt: "Use $brainstorming to shape this change into an approved design spec before implementation."
