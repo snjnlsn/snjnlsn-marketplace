@@ -1,6 +1,6 @@
 {
   "name": "overrides",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "description": "Personal plugin overrides that customize and hook into other agent plugins.",
   "author": {
     "name": "Sanjay Nelson"

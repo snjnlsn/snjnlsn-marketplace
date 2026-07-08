@@ -12,72 +12,14 @@ Task tool (general-purpose):
     design patterns, and best practices. Your job is to review completed work
     against its plan or requirements and identify issues before they cascade.
 
-    ## MCP Tools Available — Prefer These Over Generic Tools or Web Search
+    ## Project Tooling
 
-    (Kept in sync with **MCP toolkit (canonical)** in `overrides:using-overrides`.
-    If you find drift, update this block to match.)
-
-    This project has three MCP servers. Use them in preference to
-    `Read`/`Grep`/`Glob` for code navigation, and instead of `WebSearch` or
-    speculative code (e.g. `iex` snippets to guess how a stdlib function
-    behaves) for understanding dependencies.
-
-    **Tidewave is the primary tool whenever it's reachable.** It introspects
-    the actual loaded application — including dynamically-defined Phoenix/Ash
-    modules that static tools can't see. Always reach for Tidewave first for:
-    evaluating code, querying the database, reading dev logs, looking up
-    docs, finding source locations, or introspecting Ash/Ecto schemas. Fall
-    back to the static MCPs only if Tidewave fails or the server is down.
-
-    - **Tidewave** (`mcp__tidewave__*`) — runtime introspection of the
-      running Phoenix app:
-      - `project_eval` — evaluate Elixir in the app context to verify what
-        the implementer's code actually does at runtime
-      - `execute_sql_query` — query the dev database when reviewing
-        migrations or schema changes
-      - `get_logs` — read recent dev-server log output for warnings the
-        implementer may have ignored
-      - `get_ash_resources` / `get_ecto_schemas` — live introspection of
-        the Ash registry and Ecto schemas
-      - `get_docs` — verify the implementer's API usage against
-        module/function docs
-      - `get_source_location` — jump to a module/function definition to
-        confirm the implementer is calling the real thing (**preferred over
-        Serena's `find_symbol` for "where is this defined?"**)
-      - `search_package_docs` — search docs for any loaded Hex dep
-    - **Serena** (`mcp__serena__*`) — symbolic code navigation. Tidewave
-      locates symbols; Serena reads them. First call
-      `mcp__serena__check_onboarding_performed` to activate (or
-      `mcp__serena__onboarding` if not yet onboarded). Then prefer
-      `get_symbols_overview`, `find_symbol`, and `find_referencing_symbols`
-      over reading whole files. For "is this called elsewhere?" or "does
-      this match the pattern in the rest of the codebase?", use
-      `find_referencing_symbols` rather than `Grep` (no Tidewave equivalent).
-    - **`mix usage_rules.docs <Module>` / `mix usage_rules.search_docs "query"`**
-      — offline Mix-task fallback for Hex package docs when Tidewave is down.
-    - **Context7** (`mcp__context7__*`) — for non-Hex libraries, CLI tools,
-      cloud services, version-specific guidance. Resolve with
-      `mcp__context7__resolve-library-id`, then query with
-      `mcp__context7__query-docs`.
-
-    **Do not** fall back to `WebSearch` or speculative code before trying
-    these. Look up dependency behavior via Tidewave's `get_docs` /
-    `search_package_docs` if the server is up, Context7 otherwise. Read
-    source via Serena (in-repo modules and `deps/`) only if docs leave you
-    unsure.
-
-    **Don't use `python3 -c "..."` or `bash -c "..."` with multi-line bodies.**
-    Claude Code's Bash validator parses arguments with tree-sitter and can't
-    reliably validate those — multi-line bodies surface `Unhandled node type:
-    string`, and a newline followed by `#` inside a quoted argument trips the
-    `Newline followed by # inside a quoted argument can hide arguments from
-    path validation` check. Both prompts fire upstream of the permissions
-    allowlist, so adding entries won't suppress them and the controller has
-    to click through every one. If `Grep` / `Glob` / `Read` can't cover what
-    you need, `Write` the script to a scratch file (`/tmp/scratch.py`,
-    `/tmp/scratch.sh`) and execute it as `python3 /tmp/scratch.py` or `bash
-    /tmp/scratch.sh` — the executable path becomes a single token the
-    validator can check.
+    Activate Serena before code work and prefer symbolic tools for project
+    code. Use Tidewave for runtime introspection when the dev server is up.
+    Read dependency docs through Tidewave, Context7, or `mix usage_rules.*`
+    before reading dependency source. Use text/file tools for Markdown, JSON,
+    YAML, config, and literal string search. Avoid multi-line `python3 -c` or
+    `bash -c`; write scratch scripts to `/tmp` when needed.
 
     ## What Was Implemented
 
@@ -86,6 +28,10 @@ Task tool (general-purpose):
     ## Requirements / Plan
 
     {PLAN_OR_REQUIREMENTS}
+
+    Include the Repo Context Payload from the controller: relevant project
+    quality expectations and any task-specific domain, compatibility,
+    migration, security, data-shape, or integration obligations.
 
     ## Git Range to Review
 
@@ -105,10 +51,12 @@ Task tool (general-purpose):
     - Is all planned functionality present?
 
     **Code quality:**
+    - Does it satisfy the repo's stated quality standards?
     - Clean separation of concerns?
     - Proper error handling?
     - Type safety where applicable?
     - DRY without premature abstraction?
+    - Are repeated small helpers or parsing rules better expressed as an existing/shared local abstraction rather than ad hoc copies?
     - Edge cases handled?
 
     **Architecture:**

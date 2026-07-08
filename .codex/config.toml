@@ -1,0 +1,17 @@
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+approvals_reviewer = "auto_review"
+
+[features]
+experimental_use_rmcp_client = true
+
+[sandbox_workspace_write]
+network_access = true
+
+[mcp_servers.context7]
+url = "https://mcp.context7.com/mcp"
+default_tools_approval_mode = "approve"
+enabled_tools = ["resolve-library-id", "query-docs"]
+
+[mcp_servers.context7.env_http_headers]
+CONTEXT7_API_KEY = "CONTEXT7_API_KEY"

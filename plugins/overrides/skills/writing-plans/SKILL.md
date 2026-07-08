@@ -26,14 +26,42 @@ If the spec covers multiple independent subsystems, it should have been broken i
 
 Before defining tasks, map out which files will be created or modified and what each one is responsible for. This is where decomposition decisions get locked in.
 
+- Use the repo's quality guidance from AGENTS.md/CLAUDE.md, project docs, or an
+  explicitly selected quality skill while choosing module boundaries,
+  abstractions, test ownership, and the file structure for the plan.
 - Design units with clear boundaries and well-defined interfaces. Each file should have one clear responsibility.
 - You reason best about code you can hold in context at once, and your edits are more reliable when files are focused. Prefer smaller, focused files over large ones that do too much.
 - Files that change together should live together. Split by responsibility, not by technical layer.
 - In existing codebases, follow established patterns. If the codebase uses large files, don't unilaterally restructure - but if a file you're modifying has grown unwieldy, including a split in the plan is reasonable.
 
-**Inventorying existing code and dependencies:** Use the MCP toolkit defined in `overrides:using-overrides` — Serena's symbolic tools (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) for in-repo navigation; for any dependency whose API the plan touches, look up docs first (Tidewave when the dev server is up, otherwise Context7). `find_referencing_symbols` is especially important for scoping a task accurately (Task 3 edits `Foo.bar` → check now whether 1 caller or 40 callers have to move with it). Reserve `Read`/`Grep` for non-code files and text searches that don't correspond to a symbol name.
+**Inventorying existing code and dependencies:** Use the Project Tooling (Full) guidance defined in `using-overrides` — Serena's symbolic tools (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) for in-repo navigation; for any dependency whose API the plan touches, look up docs first (Tidewave when the dev server is up, otherwise Context7). `find_referencing_symbols` is especially important for scoping a task accurately (Task 3 edits `Foo.bar` → check now whether 1 caller or 40 callers have to move with it). Reserve `Read`/`Grep` for non-code files and text searches that don't correspond to a symbol name.
 
 This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
+
+## Spec Readiness
+
+Do not write an implementation plan from a spec that still contains open
+decisions, unresolved questions, "TBD", "TODO", or placeholders. Stop and send
+the work back to brainstorming/spec authoring with the unresolved decision and
+your recommended resolution for user approval. Open decisions in a spec mean
+brainstorming has not finished.
+
+## Domain-Specific Plans
+
+If the spec or requirements depend on a domain skill or project convention,
+load that guidance while writing the plan. Treat it as constraints layered onto
+the normal planning workflow, not as permission to add unrelated scope.
+
+For those plans:
+
+- Require the domain-specific source material before task decomposition. If it
+  is missing, stop and send the work back to brainstorming/spec authoring.
+- Preserve any required slice order or testing lanes unless the spec explicitly
+  justifies a different split.
+- Put compatibility, conformance, fixture, policy, integration, and project
+  verification gates in the slices that change them, not as cleanup at the end.
+- Include a domain-skill note in the plan header so execution agents know the
+  specialized checklist applies.
 
 ## Bite-Sized Task Granularity
 
@@ -51,7 +79,9 @@ This structure informs the task decomposition. Each task should produce self-con
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use overrides:subagent-driven-development (recommended) or overrides:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use the local `subagent-driven-development` skill (recommended) or local `executing-plans` skill to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Code quality:** Follow the repo's quality guidance for architecture, module boundaries, abstractions, domain model design, and test ownership.
+> **Domain guidance:** If a domain skill or project convention applies, name it here and include its required source material, slice order, and verification gates.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -146,9 +176,9 @@ After saving the plan, offer execution choice:
 **Which approach?"**
 
 **If Subagent-Driven chosen:**
-- **REQUIRED SUB-SKILL:** Use overrides:subagent-driven-development
+- **REQUIRED SUB-SKILL:** Use local `subagent-driven-development`
 - Fresh subagent per task + two-stage review
 
 **If Inline Execution chosen:**
-- **REQUIRED SUB-SKILL:** Use overrides:executing-plans
+- **REQUIRED SUB-SKILL:** Use local `executing-plans`
 - Batch execution with checkpoints for review

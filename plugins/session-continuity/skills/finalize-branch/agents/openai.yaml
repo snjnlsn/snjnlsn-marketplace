@@ -1,0 +1,4 @@
+interface:
+  display_name: "Finalize Branch"
+  short_description: "Prepare a branch for merge"
+  default_prompt: "Use $finalize-branch to audit this branch, update docs, clean up handoffs, and create the final commit."

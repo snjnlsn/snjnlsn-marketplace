@@ -1,0 +1,4 @@
+interface:
+  display_name: "Good Quality Code"
+  short_description: "Apply repo code quality standards"
+  default_prompt: "Use $good-quality-code to apply the repo quality bar to this design, implementation, or review."

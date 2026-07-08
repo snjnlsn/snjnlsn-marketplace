@@ -11,7 +11,7 @@ Load plan, review critically, execute all tasks, report when complete.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-**Note:** Tell your human partner that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (such as Claude Code or Codex). If subagents are available, use overrides:subagent-driven-development instead of this skill.
+**Note:** Tell your human partner that this workflow works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (such as Claude Code or Codex). If subagents are available, use the local `subagent-driven-development` skill instead of this skill.
 
 ## The Process
 
@@ -29,14 +29,14 @@ For each task:
 3. Run verifications as specified
 4. Mark as completed
 
-**Tool choice while implementing:** Use the MCP toolkit defined in `overrides:using-overrides`. Serena's symbolic tools (`get_symbols_overview`, `find_symbol`, `replace_symbol_body`, `insert_before_symbol`, `insert_after_symbol`) for in-repo reads and edits; Tidewave's `get_docs` / `search_package_docs` (or Context7 for non-Hex deps) before guessing at a dependency's API; Tidewave's `project_eval`, `execute_sql_query`, and `get_logs` to verify behavior at runtime instead of speculative `iex` snippets. Reserve `Read`/`Grep` for non-code files and text searches.
+**Tool choice while implementing:** Use the Project Tooling (Full) guidance defined in `using-overrides`. Serena's symbolic tools (`get_symbols_overview`, `find_symbol`, `replace_symbol_body`, `insert_before_symbol`, `insert_after_symbol`) for in-repo reads and edits; Tidewave's `get_docs` / `search_package_docs` (or Context7 for non-Hex deps) before guessing at a dependency's API; Tidewave's `project_eval`, `execute_sql_query`, and `get_logs` to verify behavior at runtime instead of speculative `iex` snippets. Reserve `Read`/`Grep` for non-code files and text searches.
 
 ### Step 3: Complete Development
 
 After all tasks complete and verified:
-- Announce: "I'm using the finishing-a-development-branch skill to complete this work."
-- **REQUIRED SUB-SKILL:** Use superpowers:finishing-a-development-branch
-- Follow that skill to verify tests, present options, execute choice
+- Report that the plan is complete and verified.
+- If the user explicitly asks to wrap up, finalize, or prepare the branch for merge, use the local `finalize-branch` skill.
+- Otherwise, leave the branch ready for the user's next instruction.
 
 ## When to Stop and Ask for Help
 
@@ -68,5 +68,5 @@ After all tasks complete and verified:
 
 **Required workflow skills:**
 - **superpowers:using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
-- **overrides:writing-plans** - Creates the plan this skill executes
-- **superpowers:finishing-a-development-branch** - Complete development after all tasks
+- **writing-plans** - Creates the plan this skill executes
+- **finalize-branch** - Complete branch finalization when the user explicitly asks to wrap up or prepare for merge

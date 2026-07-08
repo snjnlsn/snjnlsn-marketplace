@@ -1,0 +1,4 @@
+interface:
+  display_name: "Session Retrospect"
+  short_description: "Reflect and persist session lessons"
+  default_prompt: "Use $session-retrospect to reflect on this session and propose improvements."

@@ -11,9 +11,9 @@
       "source": "./plugins/overrides"
     },
     {
-      "name": "local_conf",
-      "description": "My personal configuration",
-      "source": "./plugins/local_conf"
+      "name": "snjnlsn-dev-config",
+      "description": "Personal development hooks, helper scripts, workflow caveats, and code-quality guidance.",
+      "source": "./plugins/snjnlsn-dev-config"
     },
     {
       "name": "session-continuity",

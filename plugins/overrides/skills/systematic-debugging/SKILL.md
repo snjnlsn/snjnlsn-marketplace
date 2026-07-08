@@ -119,7 +119,7 @@ You MUST complete each phase before proceeding to the next.
    - Keep tracing up until you find the source
    - Fix at source, not at symptom
 
-   **Tool choice for backward tracing:** Use the MCP toolkit defined in `overrides:using-overrides`. When the "bad value" flows through named functions, methods, or classes, Serena's `find_referencing_symbols` walks up the call graph with symbol-aware accuracy — no false hits from comments, strings, or unrelated identifiers that happen to share a name. If the bad value originates in a dependency, verify its documented behavior first — Tidewave when the dev server is up, otherwise Context7 — before assuming a bug. Reserve `Grep` for text fragments (log messages, error strings, config keys).
+   **Tool choice for backward tracing:** Use the Project Tooling (Full) guidance defined in `using-overrides`. When the "bad value" flows through named functions, methods, or classes, Serena's `find_referencing_symbols` walks up the call graph with symbol-aware accuracy — no false hits from comments, strings, or unrelated identifiers that happen to share a name. If the bad value originates in a dependency, verify its documented behavior first — Tidewave when the dev server is up, otherwise Context7 — before assuming a bug. Reserve `Grep` for text fragments (log messages, error strings, config keys).
 
 ### Phase 2: Pattern Analysis
 
@@ -128,7 +128,7 @@ You MUST complete each phase before proceeding to the next.
 1. **Find Working Examples**
    - Locate similar working code in same codebase
    - What works that's similar to what's broken?
-   - **Use the MCP toolkit defined in `overrides:using-overrides`** — Serena's `get_symbols_overview` then `find_symbol` (with `include_body=True`) to find and read working implementations symbol-by-symbol; Tidewave (when up) or Context7 to confirm what a working dependency call should look like. Reserve `Grep`/`Read` for text matches that aren't symbol names.
+   - **Use the Project Tooling (Full) guidance defined in `using-overrides`** — Serena's `get_symbols_overview` then `find_symbol` (with `include_body=True`) to find and read working implementations symbol-by-symbol; Tidewave (when up) or Context7 to confirm what a working dependency call should look like. Reserve `Grep`/`Read` for text matches that aren't symbol names.
 
 2. **Compare Against References**
    - If implementing pattern, read reference implementation COMPLETELY
@@ -179,7 +179,7 @@ You MUST complete each phase before proceeding to the next.
    - Automated test if possible
    - One-off test script if no framework
    - MUST have before fixing
-   - Use the `overrides:test-driven-development` skill for writing proper failing tests
+   - Use the local `test-driven-development` skill for writing proper failing tests
 
 2. **Implement Single Fix**
    - Address the root cause identified
@@ -287,8 +287,8 @@ These techniques are part of systematic debugging and available in this director
 - **`condition-based-waiting.md`** - Replace arbitrary timeouts with condition polling
 
 **Related skills:**
-- **overrides:test-driven-development** - For creating failing test case (Phase 4, Step 1)
-- **overrides:verification-before-completion** - Verify fix worked before claiming success
+- **test-driven-development** - For creating failing test case (Phase 4, Step 1)
+- **verification-before-completion** - Verify fix worked before claiming success
 
 ## Real-World Impact
 

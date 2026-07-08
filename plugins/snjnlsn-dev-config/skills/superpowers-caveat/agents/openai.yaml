@@ -1,0 +1,4 @@
+interface:
+  display_name: "Superpowers Caveat"
+  short_description: "Prefer repo-local code guidance"
+  default_prompt: "Use $superpowers-caveat when applying Superpowers workflows so repo-local code reading, writing, and review guidance takes precedence."

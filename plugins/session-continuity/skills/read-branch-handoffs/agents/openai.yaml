@@ -1,0 +1,4 @@
+interface:
+  display_name: "Read Branch Handoffs"
+  short_description: "Load prior branch handoff context"
+  default_prompt: "Use $read-branch-handoffs to load the handoff context for this branch."

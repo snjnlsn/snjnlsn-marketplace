@@ -1,0 +1,4 @@
+interface:
+  display_name: "Use Overrides"
+  short_description: "Prefer override skill variants"
+  default_prompt: "Use $using-overrides to route skill and subagent usage through the overrides plugin."

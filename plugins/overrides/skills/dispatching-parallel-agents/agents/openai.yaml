@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dispatching Parallel Agents"
+  short_description: "Split independent work across agents"
+  default_prompt: "Use $dispatching-parallel-agents to split these independent failures across focused subagents."

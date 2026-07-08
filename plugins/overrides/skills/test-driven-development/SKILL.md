@@ -350,7 +350,7 @@ Can't check all boxes? You skipped TDD. Start over.
 
 ## Locating Code Under Test and Verifying Behavior
 
-Use the MCP toolkit defined in `overrides:using-overrides` when writing tests:
+Use the Project Tooling (Full) guidance defined in `using-overrides` when writing tests:
 
 - **Finding the symbol you're about to test** — Serena's `get_symbols_overview` then `find_symbol` (with `include_body=True`). Reading the production symbol-by-symbol is more reliable than scanning the whole file and prevents drift between your mental model of the API and the real signature.
 - **Scoping the test's blast radius** — before you write a test that pins a behavior, `find_referencing_symbols` tells you how many callers depend on the current behavior. A test that pins a contract used by 40 callers is structurally different from one that pins a private helper used by one.

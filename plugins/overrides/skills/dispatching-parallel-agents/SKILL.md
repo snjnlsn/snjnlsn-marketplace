@@ -87,7 +87,7 @@ Good agent prompts are:
 1. **Focused** - One clear problem domain
 2. **Self-contained** - All context needed to understand the problem
 3. **Specific about output** - What should the agent return?
-4. **MCP-aware** - For any code-touching task, paste the **MCP toolkit (canonical)** block from `overrides:using-overrides` at the top of the agent prompt (or reuse one of the override prompt templates that already inlines it: `overrides:requesting-code-review/code-reviewer.md`, `overrides:subagent-driven-development/implementer-prompt.md`, `overrides:subagent-driven-development/spec-reviewer-prompt.md`). Fresh subagent contexts do not load skills, so without an inline preamble they silently fall back to generic `Read`/`Grep`/`WebSearch` and miss Tidewave / Context7 / Serena. This is the single most common cause of parallel-agent drift on this project.
+4. **Project-tooling aware** - For any code-touching task, paste the **Project Tooling (Concise Subagent Preamble)** from `using-overrides` at the top of the agent prompt, plus any task-relevant **Repo Context Payload**. You can also reuse one of the prompt templates that already inlines the preamble: `requesting-code-review/code-reviewer.md`, `subagent-driven-development/implementer-prompt.md`, or `subagent-driven-development/spec-reviewer-prompt.md`. Fresh subagent contexts do not reliably load repo skills, so without inline local guidance they silently fall back to generic `Read`/`Grep`/`WebSearch` and miss Tidewave / Context7 / Serena. This is a common cause of parallel-agent drift.
 
 ```markdown
 Fix the 3 failing tests in src/agents/agent-tool-abort.test.ts:

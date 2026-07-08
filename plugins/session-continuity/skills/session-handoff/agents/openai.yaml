@@ -1,0 +1,4 @@
+interface:
+  display_name: "Session Handoff"
+  short_description: "Maintain the current session handoff"
+  default_prompt: "Use $session-handoff to create, read, or update the current session handoff."

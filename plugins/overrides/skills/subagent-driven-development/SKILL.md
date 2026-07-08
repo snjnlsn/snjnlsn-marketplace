@@ -57,13 +57,13 @@ digraph process {
         "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
         "Code quality reviewer subagent approves?" [shape=diamond];
         "Implementer subagent fixes quality issues" [shape=box];
-        "Mark task complete in TodoWrite" [shape=box];
+        "Close completed subagents and mark task complete in TodoWrite" [shape=box];
     }
 
     "Read plan, extract all tasks with full text, note context, create TodoWrite" [shape=box];
     "More tasks remain?" [shape=diamond];
     "Dispatch final code reviewer subagent for entire implementation" [shape=box];
-    "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
+    "Use completion/finalization skill" [shape=box style=filled fillcolor=lightgreen];
 
     "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
@@ -78,11 +78,11 @@ digraph process {
     "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" -> "Code quality reviewer subagent approves?";
     "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no"];
     "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
-    "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite" [label="yes"];
-    "Mark task complete in TodoWrite" -> "More tasks remain?";
+    "Code quality reviewer subagent approves?" -> "Close completed subagents and mark task complete in TodoWrite" [label="yes"];
+    "Close completed subagents and mark task complete in TodoWrite" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
-    "Dispatch final code reviewer subagent for entire implementation" -> "Use superpowers:finishing-a-development-branch";
+    "Dispatch final code reviewer subagent for entire implementation" -> "Use completion/finalization skill";
 }
 ```
 
@@ -125,6 +125,24 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 - `./spec-reviewer-prompt.md` - Dispatch spec compliance reviewer subagent
 - `./code-quality-reviewer-prompt.md` - Dispatch code quality reviewer subagent
 
+## Code Quality Standard
+
+When preparing implementer context, reviewing the file structure in a plan, and
+dispatching code quality reviewers, pass along the task-relevant quality
+expectations from the plan, AGENTS.md/CLAUDE.md, project docs, or explicitly
+selected skills. Fresh subagents do not reliably load repo guidance on their
+own, so include the relevant boundaries, abstraction, testing, compatibility,
+security, and domain-specific obligations directly in prompts.
+
+## Subagent Lifecycle
+
+After a subagent has produced its final report and no further follow-up is
+needed, close that subagent using the available agent/thread control for the
+tool you dispatched it with. Do this for implementers after their task and
+review fixes are accepted, and for reviewers after their output has been read
+and any issues have been routed. Keep a subagent open only while it is actively
+answering questions, fixing review findings, or blocked awaiting context.
+
 ## Example Workflow
 
 ```
@@ -156,7 +174,7 @@ Spec reviewer: ✅ Spec compliant - all requirements met, nothing extra
 [Get git SHAs, dispatch code quality reviewer]
 Code reviewer: Strengths: Good test coverage, clean. Issues: None. Approved.
 
-[Mark Task 1 complete]
+[Close Task 1 implementer/reviewer agents, mark Task 1 complete]
 
 Task 2: Recovery modes
 
@@ -190,7 +208,7 @@ Implementer: Extracted PROGRESS_INTERVAL constant
 [Code reviewer reviews again]
 Code reviewer: ✅ Approved
 
-[Mark Task 2 complete]
+[Close Task 2 implementer/reviewer agents, mark Task 2 complete]
 
 ...
 
@@ -267,13 +285,13 @@ Done!
 ## Integration
 
 **Required workflow skills:**
-- **superpowers:using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
-- **overrides:writing-plans** - Creates the plan this skill executes
-- **overrides:requesting-code-review** - Code review template for reviewer subagents
-- **superpowers:finishing-a-development-branch** - Complete development after all tasks
+- **superpowers:using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing) when no local repo equivalent exists
+- **writing-plans** - Creates the plan this skill executes
+- **requesting-code-review** - Code review template for reviewer subagents
+- **finalize-branch** - Complete branch finalization when the user explicitly asks to wrap up or prepare for merge
 
 **Subagents should use:**
-- **overrides:test-driven-development** - Subagents follow TDD for each task
+- **test-driven-development** - Subagents follow TDD for each task
 
 **Alternative workflow:**
-- **overrides:executing-plans** - Use for parallel session instead of same-session execution
+- **executing-plans** - Use for parallel session instead of same-session execution

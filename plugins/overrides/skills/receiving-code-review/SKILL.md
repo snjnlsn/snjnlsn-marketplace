@@ -89,7 +89,7 @@ IF conflicts with your human partner's prior decisions:
 
 ```
 IF reviewer suggests "implementing properly":
-  find actual usage using the MCP toolkit (see overrides:using-overrides):
+  find actual usage using the Project Tooling (Full) guidance in `using-overrides`:
     - For a symbol (function / method / class / exported const):
         Serena's `find_referencing_symbols` — real call sites with symbol
         context, no false positives from comments, strings, or unrelated

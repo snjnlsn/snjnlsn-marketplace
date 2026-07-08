@@ -1,0 +1,4 @@
+interface:
+  display_name: "Receiving Code Review"
+  short_description: "Vet and implement review feedback"
+  default_prompt: "Use $receiving-code-review to evaluate this review feedback and implement valid changes."
