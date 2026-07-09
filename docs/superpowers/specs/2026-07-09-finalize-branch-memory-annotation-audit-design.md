@@ -24,13 +24,15 @@ During the audit phase, use Serena memory tooling:
 
 1. Call `list_memories`.
 2. If a `core` memory exists, read it first and treat it as the relevance map.
-3. Follow only memory references that appear relevant to changed code, changed docs, handoff claims, or branch facts.
-4. If no `core` memory exists, use memory names as the relevance signal and read only likely matches.
-5. Summarize which memories were read, which were skipped as irrelevant, and whether any memory guidance affects later proposals.
+3. Compare the changed paths and symbols, changed docs, handoff claims, and branch facts with the topics and memory references described by `core`.
+4. Read only memories that the comparison identifies as likely to affect the branch audit.
+5. If `core` is absent, incomplete, unreadable, or does not cover the branch topics, use the remaining memory names as a secondary relevance signal and read only likely matches.
+6. If a referenced memory is unavailable or unreadable, record that limitation and continue with the evidence that is available.
+7. Summarize memories read, the count of memories skipped as irrelevant, and whether memory guidance affects later proposals. Name skipped memories only when the name explains a decision or limitation.
 
 Current code remains authoritative. Memories provide context to verify against the branch, not facts that override source, tests, or repo docs.
 
-If no memories exist, or no memories are relevant, finalize should record that briefly and continue.
+If Serena memory tooling is unavailable, or if no memories exist or are relevant, finalize should record that briefly and continue. It should not search Serena's storage directly or halt finalization solely because memory context is unavailable.
 
 ## Elixir Annotation Audit
 
@@ -43,8 +45,14 @@ For introduced or changed Elixir public API, inspect annotation presence and acc
 - `@spec`
 - `@type`
 - `@opaque`
+- `@typedoc`
 - `@callback`
-- `@impl true`
+- `@macrocallback`
+- `@optional_callbacks`
+- `@behaviour`
+- `@impl true` and `@impl SomeBehaviour`
+
+Treat a symbol as intended public API only when the changed code and project conventions support that conclusion. Inspect exported functions, macros, protocol implementations, behaviour callbacks, and public types, while honoring `@doc false`, internal namespaces, and nearby documentation conventions. Do not infer that every exported `def` is intended as documented public API.
 
 Propose additions or corrections only when the annotation is accurate from the source, callers, tests, or compiler feedback. Prefer no annotation over a guessed type or callback contract.
 
@@ -54,7 +62,17 @@ For Elixir projects, running this command is useful evidence for type/spec warni
 mix compile --all-warnings --warnings-as-errors
 ```
 
-The skill should not blindly require the command if the project is not Elixir or the environment cannot compile. When it runs and fails, the relevant warnings become inputs to annotation proposals or bug reports. The warnings do not automatically justify speculative annotations.
+For branches with introduced or changed Elixir source, offer this command during the inline annotation phase unless the exact command already ran successfully during preflight. Keep the annotation-phase run approval-gated like the existing branch-health checks.
+
+Treat the result as diagnostic evidence rather than an automatic finalization gate:
+
+- Attribute warnings to changed files or symbols before using them in an annotation proposal.
+- Use warnings attributable to introduced or changed code as proposal or bug-report evidence.
+- Report unrelated or pre-existing warnings separately without expanding the branch scope.
+- Record environment or dependency failures as limitations and continue the annotation audit.
+- Do not treat a nonzero exit caused by warnings as an automatic halt or as justification for speculative annotations.
+
+This non-blocking policy applies to the annotation-phase diagnostic. It does not change the existing preflight policy for a user-selected branch-health command. Do not offer the diagnostic for non-Elixir branches, when `mix.exs` is absent, or when the `mix` executable is unavailable.
 
 Keep the existing non-Elixir guidance as a fallback: Python docstrings, Rust `///`, and JS/TS JSDoc on exported symbols.
 
@@ -63,7 +81,8 @@ Keep the existing non-Elixir guidance as a fallback: Python docstrings, Rust `//
 Memory findings should appear in the audit summary:
 
 - memories read
-- memories skipped as irrelevant
+- count of memories skipped as irrelevant, naming individual skipped memories only when useful
+- unavailable or unreadable memory context
 - memory guidance that affects a proposed handoff, inline-doc, repo-doc, or annotation decision
 
 Annotation proposals should remain approval-gated with the current inline docs flow. They should clearly distinguish:
@@ -81,16 +100,22 @@ Expected files:
 - `plugins/session-continuity/skills/finalize-branch/references/inline-code-docs.md`
 - optionally a small new reference if the memory audit would make `SKILL.md` too dense
 
+While editing `inline-code-docs.md`, correct its stale phase label so it matches Phase 3 in the main skill. Check `agents/openai.yaml` after the skill edit and regenerate it only if its user-facing metadata no longer matches the skill.
+
 The plugin cache copy under `~/.codex/plugins/cache/...` is not the canonical source and should not be edited for the repo change.
 
 ## Validation
 
-After updating the skill:
+Validate the behavior before and after updating the skill:
 
-1. Confirm the skill tells a future agent where the memory audit happens.
-2. Confirm relevance is determined by `core` memory first when present, otherwise memory names.
-3. Confirm memories are framed as context to verify, not authority over source.
-4. Confirm Elixir annotation coverage includes `@spec`, related type/callback annotations, and `@impl true`.
-5. Confirm annotation accuracy is prioritized over completeness.
-6. Confirm `mix compile --all-warnings --warnings-as-errors` is mentioned as useful Elixir evidence without becoming an unconditional requirement.
-7. Run the available skill/frontmatter validation for the changed skill if one exists in the repo or plugin tooling.
+1. Before editing the skill, run a baseline application scenario against the current skill. Use isolated fixture data or tool-result stubs rather than changing project memories. The fixture should include a `core` memory, one relevant memory, one irrelevant memory, changed Elixir types or callbacks, one warning attributable to changed code, one unrelated warning, and an intentionally unclear type that must not receive a guessed spec. Record the current skill's omissions or incorrect decisions.
+2. After editing, rerun the same scenario and confirm the revised skill reads `core`, selects only relevant memory, aggregates irrelevant memory reporting, scopes compiler warnings to changed code, inspects the full Elixir annotation relationships, and declines the unclear spec.
+3. Add an edge-case scenario where `core` is incomplete or a memory is unreadable. Confirm the skill falls back to memory names, reports the limitation, and continues.
+4. Confirm the skill tells a future agent that the memory audit happens during the handoff and branch-facts phase.
+5. Confirm memories are framed as context to verify, not authority over source.
+6. Confirm public API selection honors `@doc false`, internal namespaces, macros, protocols, behaviours, and local conventions.
+7. Confirm Elixir coverage includes docs, specs, types and type docs, callbacks and macro callbacks, optional callbacks, behaviours, and both forms of `@impl`.
+8. Confirm annotation accuracy is prioritized over completeness.
+9. Confirm `mix compile --all-warnings --warnings-as-errors` is approval-gated in the annotation phase, reused when it already succeeded during preflight, non-blocking as an annotation diagnostic, and scoped to warnings attributable to changed code.
+10. Confirm `inline-code-docs.md` identifies itself as Phase 3 and `agents/openai.yaml` still matches the skill.
+11. Run the available skill/frontmatter validation for the changed skill if one exists in the repo or plugin tooling.
