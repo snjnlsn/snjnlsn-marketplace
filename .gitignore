@@ -3,3 +3,6 @@
 # Ignore local env files.
 .env
 .env.*
+
+# Keep local git worktrees out of repository status.
+.worktrees/
