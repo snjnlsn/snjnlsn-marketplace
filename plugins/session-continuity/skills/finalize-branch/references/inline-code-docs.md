@@ -21,7 +21,7 @@ Inspect presence and accuracy for:
 - `@behaviour`
 - `@impl true` and `@impl SomeBehaviour`
 
-Use source bodies, callers, tests, and compiler feedback as evidence. Propose an addition or correction only when that evidence supports the contract. Prefer no annotation over a guessed type, callback, behaviour, or implementation marker.
+An annotation is approval-ready only when every part of its contract is supported by current source, callers, tests, compiler evidence, or live repository docs. If its category is indicated but its signature or contract is incomplete, report an audit finding and a no-proposal-pending-verification outcome; do not show placeholder or guessed types. A handoff or memory claim alone cannot justify `@optional_callbacks`; current project evidence must establish that the callback may be omitted.
 
 Do not add private or internal docs unless an existing private doc is stale.
 
