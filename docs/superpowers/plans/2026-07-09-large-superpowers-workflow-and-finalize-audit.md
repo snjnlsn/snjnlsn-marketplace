@@ -81,7 +81,7 @@ If execution invalidates the graph, stop new dispatches, checkpoint safe work, u
 
 ---
 
-### Task A1: Establish the Caveat Behavior Baseline
+### Task 1: A1 Caveat Behavior Baseline
 
 **Model:** Sol High coordinator; five independent Terra High evaluation agents.
 
@@ -186,7 +186,7 @@ If all five controls already pass every criterion, do not edit the caveat. Reass
 
 ---
 
-### Task A2: Add the Conditional Large-Workflow Overlay
+### Task 2: A2 Conditional Large-Workflow Overlay
 
 **Model:** Luna Medium implementation worker; Sol High coordinator.
 
@@ -383,7 +383,7 @@ Expected: no output. Do not stage or commit until Task A3 passes.
 
 ---
 
-### Task A3: Prove, Review, and Commit the Caveat Workstream
+### Task 3: A3 Prove, Review, and Commit the Caveat Workstream
 
 **Model:** Five independent Terra High evaluation agents; Terra High task reviewer; Sol High coordinator.
 
@@ -479,7 +479,7 @@ Do not begin Task B1 until this ledger entry exists.
 
 ---
 
-### Task B1: Establish the Finalize-Branch Behavior Baseline
+### Task 4: B1 Finalize-Branch Behavior Baseline
 
 **Model:** Five independent Terra High evaluation agents; Sol High coordinator.
 
@@ -586,7 +586,7 @@ If all five outputs already pass every criterion, do not edit the skill. Reasses
 
 ---
 
-### Task B2: Implement the Minimal Memory and Annotation Guidance
+### Task 5: B2 Minimal Memory and Annotation Guidance
 
 **Model:** Luna Medium implementation worker; Sol High coordinator.
 
@@ -791,7 +791,7 @@ Keep the skill edits unstaged while Task B3 exercises the exact behavior that fa
 
 ---
 
-### Task B3: Prove, Review, and Commit the Revised Finalize Skill
+### Task 6: B3 Prove, Review, and Commit the Revised Finalize Skill
 
 **Model:** Five independent Terra High evaluation agents; Terra High task reviewer; Sol High coordinator.
 
@@ -959,7 +959,7 @@ Do not begin Task C1 until this ledger entry exists.
 
 ## Integration Review
 
-### Task C1: Review and Verify the Combined Change
+### Task 7: C1 Review and Verify the Combined Change
 
 **Model:** Sol High whole-branch reviewer and coordinator.
 

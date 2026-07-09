@@ -6,3 +6,6 @@
 
 # Keep local git worktrees out of repository status.
 .worktrees/
+
+# Keep subagent execution ledgers and handoff artifacts local.
+.superpowers/
