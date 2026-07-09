@@ -23,6 +23,8 @@ Inspect presence and accuracy for:
 
 An annotation is approval-ready only when every part of its contract is supported by current source, callers, tests, compiler evidence, or live repository docs. If its category is indicated but its signature or contract is incomplete, report an audit finding and a no-proposal-pending-verification outcome; do not show placeholder or guessed types. A handoff or memory claim alone cannot justify `@optional_callbacks`; current project evidence must establish that the callback may be omitted.
 
+Either `@impl` form is approval-ready only when a currently declared `@behaviour` defines a matching `@callback` or `@macrocallback` for that symbol and arity. If that matching callback contract is absent or incomplete, report the existing `@impl` as an audit finding with a no-proposal-pending-verification outcome; do not propose replacing `@impl true` with named `@impl` until the exact callback or macrocallback declaration is verified or approved.
+
 Do not add private or internal docs unless an existing private doc is stale.
 
 ## Compiler Diagnostic

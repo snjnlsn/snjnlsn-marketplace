@@ -23,6 +23,6 @@ If Serena memory tools are unavailable, do not inspect memory storage directly. 
 Include:
 
 - names of memories read
-- count of memories skipped as irrelevant; name individual memories only when a name explains a decision or limitation
+- count of discovered memories deliberately not read because they are irrelevant; every such memory counts toward this total, which must match the audit decisions; name individual memories only when a name explains a decision or limitation
 - unavailable or unreadable memory context
 - memory guidance that affects a handoff, branch-fact, inline-doc, repo-doc, or annotation proposal

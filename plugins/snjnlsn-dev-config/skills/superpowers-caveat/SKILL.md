@@ -5,19 +5,17 @@ description: Use when invoking, following, or delegating from any `superpowers:*
 
 # Superpowers Caveat
 
-Use Superpowers as the base workflow, with repo-local guidance controlling how code is read, written, tested, reviewed, and delegated.
+Use Superpowers as base workflow; repo-local guidance controls work and delegation.
 
-## Apply Local Guidance
+## Local Guidance
 
-- Read applicable `AGENTS.md`, `CLAUDE.md`, `.agents/instructions.md`, and nested project guidance.
-- Prefer repo-local skills for navigation, edits, testing, verification, review, planning, and subagent prompts.
-- Carry relevant local guidance into dispatched agent contracts.
+Read applicable `AGENTS.md`, `CLAUDE.md`, `.agents/instructions.md`, and nested guidance. Prefer repo-local skills for navigation, edits, testing, verification, review, planning, and subagent prompts. Carry it into dispatched agent contracts.
 
-## Classify Large Work After Context
+## Large Work
 
-Do not classify from the opening request. During brainstorming, first gather enough project context to understand the complete implementation surface.
+During brainstorming, gather context for the implementation surface before classification; never from the opening request.
 
-Activate the large-workflow overlay when the gathered scope suggests any one of:
+Activate the overlay when scope suggests one of:
 
 - at least 5,000 changed lines
 - at least 30 minutes of agent execution
@@ -25,10 +23,10 @@ Activate the large-workflow overlay when the gathered scope suggests any one of:
 - meaningful integration or merge risk
 - consequential architecture, migration, security, or data work
 
-When near a threshold, activate if uncertainty suggests substantial hidden work. Record the decision and reasons in the design spec. When entering planning or execution, inherit the recorded decision from the approved spec or plan.
+Near a threshold, activate when uncertainty indicates substantial hidden work. Record the decision and reasons in the design spec. Planning and execution inherit it from the approved spec or plan.
 
 If activated, read `references/large-workflow.md` before finishing brainstorming and carry its graph, contract, model, and scheduling rules through planning and execution.
 
 ## Scope
 
-Do not fork or edit bundled Superpowers skills. The activated overlay may override upstream model routing and the blanket parallel-worker prohibition only under the conditions in `references/large-workflow.md`. Routine work keeps ordinary Superpowers behavior.
+Do not fork or edit bundled Superpowers skills. Under `references/large-workflow.md`, the activated overlay may override only upstream model routing and the blanket parallel-worker prohibition. Routine work keeps ordinary Superpowers behavior.
