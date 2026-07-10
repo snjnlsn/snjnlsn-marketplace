@@ -1,6 +1,6 @@
 # Large Superpowers Workflow
 
-Load only after gathered project context activates the large-workflow overlay. The activation decision belongs in the design spec and flows into the implementation plan and execution ledger.
+Load only after gathered project context activates the large-workflow overlay. The activation decision belongs in the design spec and flows into the implementation plan and an execution ledger within the project's `.superpowers/sdd` directory. Upon completing the plan, the ledger and any SDD scratch files should be removed.
 
 ## Brainstorming Execution Graph
 
@@ -65,10 +65,12 @@ Record task status, dependency changes, model substitutions, commits, reviews, a
 
 If execution invalidates the graph:
 
-1. Stop new dispatches.
-2. Let safe, non-conflicting work reach a stable checkpoint.
-3. Update the design, plan, contracts, dependencies, interfaces, and ownership.
-4. Review the changed graph.
-5. Resume from the corrected dependency state.
+1. The discovering worker stops work that depends on the invalidated assumption, bubbles the evidence and impact to the top-level coordinator, and does not revise the approved graph locally.
+2. Stop new dispatches.
+3. The coordinator decides how to adapt the plan to best handle the invalidation and concisely records the evidence, decision, rationale, affected graph, and resume conditions in a session handoff document.
+4. Let safe, non-conflicting work reach a stable checkpoint.
+5. Update the design, plan, contracts, dependencies, interfaces, and ownership.
+6. Review the changed graph.
+7. Resume from the corrected dependency state.
 
 Model strength does not compensate for unclear ownership, unresolved interfaces, or an obsolete plan.
