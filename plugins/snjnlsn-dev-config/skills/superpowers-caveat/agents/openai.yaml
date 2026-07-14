@@ -1,4 +1,4 @@
 interface:
   display_name: "Superpowers Caveat"
   short_description: "Apply local guidance and scale large work"
-  default_prompt: "Use $superpowers-caveat to apply repo-local guidance and, after gathering scope, scale large Superpowers work with execution graphs and model-aware agent contracts."
+  default_prompt: "Use $superpowers-caveat to apply repo-local guidance and, after gathering scope, scale large Superpowers work with asynchronous, resumable execution graphs and bounded agent contracts."
