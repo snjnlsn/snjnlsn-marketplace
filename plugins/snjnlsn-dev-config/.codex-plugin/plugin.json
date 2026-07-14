@@ -1,6 +1,6 @@
 {
   "name": "snjnlsn-dev-config",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "Personal development configuration, hooks, helper scripts, workflow caveats, and code-quality guidance.",
   "author": {
     "name": "Sanjay Nelson"

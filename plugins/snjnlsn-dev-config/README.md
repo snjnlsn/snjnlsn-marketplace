@@ -12,7 +12,7 @@ scripts, workflow caveats, and opinionated code-quality guidance for
 | Skill | Purpose |
 |---|---|
 | `good-quality-code` | Quality bar for readable, maintainable code, module boundaries, tests, and Ash/Phoenix/Elixir choices. |
-| `superpowers-caveat` | Prefer repo-local guidance when using Superpowers; after gathering full scope, add execution graphs, agent contracts, model routing, and controlled parallelism for large work. |
+| `superpowers-caveat` | Prefer repo-local guidance when using Superpowers; resume interrupted plans from durable evidence, and add asynchronous execution graphs, bounded agent contracts, capability-based model selection, and controlled parallelism for large work. |
 
 ### Hooks
 

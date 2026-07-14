@@ -1,6 +1,6 @@
 ---
 name: superpowers-caveat
-description: Use when invoking, following, or delegating from any `superpowers:*` skill.
+description: Use when invoking, following, or delegating from any `superpowers:*` skill, and when resuming a superpowers plan.
 ---
 
 # Superpowers Caveat
@@ -25,8 +25,14 @@ Activate the overlay when scope suggests one of:
 
 Near a threshold, activate when uncertainty indicates substantial hidden work. Record the decision and reasons in the design spec. Planning and execution inherit it from the approved spec or plan.
 
-If activated, read `references/large-workflow.md` before finishing brainstorming and carry its graph, contract, model, and scheduling rules through planning and execution.
+If activated, read `references/large-workflow.md` before finishing brainstorming and carry its graph, contract, capability-selection, scheduling, and agent-closure rules through planning and execution.
+
+## Resuming a Plan
+
+When resuming `executing-plans` or `subagent-driven-development` after a context cutoff, read `references/resuming-plans.md` before dispatching work, changing the plan, or treating any task as complete. Reconstruct and continue the same execution flow from the approved artifacts and repository evidence, not conversation memory.
+
+For an activated large-workflow overlay, also read the overlay-specific resume requirements in `references/large-workflow.md`. The overlay extends this protocol; it does not replace it.
 
 ## Scope
 
-Do not fork or edit bundled Superpowers skills. Under `references/large-workflow.md`, the activated overlay may override only upstream model routing and the blanket parallel-worker prohibition. Routine work keeps ordinary Superpowers behavior.
+Do not fork or edit bundled Superpowers skills. Under `references/large-workflow.md`, the activated overlay may override only upstream capability selection and the blanket parallel-worker prohibition. Routine work keeps ordinary Superpowers behavior.
