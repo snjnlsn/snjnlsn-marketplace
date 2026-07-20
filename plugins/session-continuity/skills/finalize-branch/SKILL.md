@@ -5,7 +5,7 @@ description: Use when the user explicitly asks to finalize, wrap up, or prepare 
 
 # Finalize Branch
 
-Finalize a feature branch by auditing branch changes, handoffs, and relevant project memories, updating docs where needed, deleting the branch's session handoffs, and producing one final commit.
+Finalize a feature branch by auditing branch changes, handoffs, and relevant project memories; identifying durable process improvements; updating docs where needed; deleting the branch's session handoffs; and producing one final commit.
 
 The workflow is interactive. Each phase ends at an approval gate before the next phase begins. State lives in conversation context; cancellation means start over, except for the stash-based resume flow in `references/preflight.md`.
 
@@ -33,9 +33,10 @@ Activate only for explicit branch-finish requests such as:
 
 1. **Preflight and branch health** — Read `references/preflight.md`. Detect resume stashes, refuse unsafe branch states, identify the base branch, and run or record skipped branch checks.
 2. **Audit handoffs, memories, and branch facts** - Confirm branch handoffs, audit relevant Serena memories, compare that context with code, resolve ambiguities, route callouts, and clean up in-code handoff references. Read `references/memory-audit.md` before the comparison. Read `references/callout-harvesting.md` and `references/handoff-reference-cleanup.md` when those steps have work.
-3. **Inline code docs and annotations** - Propose focused updates to intended public API docs and language-specific annotations, with Elixir first, then apply approved edits. Read `references/inline-code-docs.md`.
-4. **Repo docs** — Propose updates to live repo docs, excluding `docs/superpowers/**`, and apply approved edits. Read `references/repo-docs.md`.
-5. **Handoff cleanup and final commit** — Review pending changes, delete confirmed handoffs, stage explicit paths, compose the commit, and report the result. Read `references/final-commit.md`.
+3. **Repeatable improvements** - Inspect handoffs and branch work for repeated cleanups, newly established conventions, and preventable mistakes. Propose durable enforcement through an agent instruction, skill change, or static code/Credo rule; dismiss one-off findings. Apply only approved changes. Read `references/repeatable-improvements.md`.
+4. **Inline code docs and annotations** - Propose focused updates to intended public API docs and language-specific annotations, with Elixir first, then apply approved edits. Read `references/inline-code-docs.md`.
+5. **Repo docs** — Propose updates to live repo docs, excluding `docs/superpowers/**`, and apply approved edits. Read `references/repo-docs.md`.
+6. **Handoff cleanup and final commit** — Review pending changes, delete confirmed handoffs, stage explicit paths, compose the commit, and report the result. Read `references/final-commit.md`.
 
 ## Documentation Style
 
@@ -64,6 +65,7 @@ Apply this style to every inline doc, README, and `docs/**` prose proposal:
 - `references/memory-audit.md` - Serena memory discovery, relevance, fallback, authority, and audit-summary rules.
 - `references/callout-harvesting.md` — extracting, deduping, resolving, and routing handoff callouts.
 - `references/handoff-reference-cleanup.md` — scanning source comments/docs for handoff or callout references.
+- `references/repeatable-improvements.md` — finding durable cleanup and convention candidates and choosing the narrowest enforcement surface.
 - `references/inline-code-docs.md` — inline documentation candidate selection and approval flow.
 - `references/repo-docs.md` — README and `docs/**` proposal rules.
 - `references/final-commit.md` — handoff deletion, staging, commit, cancellation retention, and edge cases.
