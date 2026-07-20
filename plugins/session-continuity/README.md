@@ -62,7 +62,7 @@ The script is idempotent: re-runs preserve the existing directory and any existi
 | `skills/read-branch-handoffs/` | Read-only bulk loader. Gathers every handoff attributable to the current git branch (committed on the branch + uncommitted in the working tree) and presents them in chronological order as session context. The sanctioned read path for prior-session handoffs. |
 | `skills/handle-callouts/` | Capture session findings as callouts (discoveries, decisions, caveats, gotchas, lessons learned, known issues, complexities, edge cases) in the current session's handoff. Triggers on explicit phrases or proactive recognition. |
 | `skills/session-retrospect/` | End-of-session reflection. After explicit approval: narrative appended to the current handoff; concrete edits applied directly to the affected files (skills, `CLAUDE.md`, settings, hooks). |
-| `skills/finalize-branch/` | End-of-branch pipeline — audits and updates inline code docs and project docs (with language/tone guidance), removes the branch's specific handoff files (never the `.session-continuity/handoffs/` directory or its `README.md`), produces one final commit; supports cancel-and-resume via stash. |
+| `skills/finalize-branch/` | End-of-branch pipeline — audits handoffs and branch work for durable instruction, skill, or static-analysis improvements; updates inline code docs and project docs; removes the branch's specific handoff files (never the `.session-continuity/handoffs/` directory or its `README.md`); and produces one final commit. Supports cancel-and-resume via stash. |
 
 ### Hooks
 
