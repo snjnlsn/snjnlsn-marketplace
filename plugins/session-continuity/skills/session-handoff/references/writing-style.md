@@ -4,6 +4,10 @@ Handoffs help a future session resume without re-deriving context. Every word sh
 
 ## Rules
 
+- Use ASD-STE100 Simplified Technical English for prose and comments: short
+  sentences, active voice, direct instructions, and consistent technical terms.
+- Preserve exact identifiers, commands, paths, and quotations. Keep technical
+  meaning unchanged when you simplify prose.
 - Prefer bullets over paragraphs.
 - Lead with outcomes, decisions, and concrete changes.
 - Use `path:line`, commit SHAs, or issue IDs instead of restating code.

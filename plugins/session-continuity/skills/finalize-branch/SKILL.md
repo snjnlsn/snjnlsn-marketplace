@@ -40,7 +40,13 @@ Activate only for explicit branch-finish requests such as:
 
 ## Documentation Style
 
-Apply this style to every inline doc, README, and `docs/**` prose proposal:
+Use ASD-STE100 Simplified Technical English for all documentation and code
+comments you propose or edit, including inline docs, READMEs, and `docs/**`.
+Use short sentences, active voice, direct instructions, and consistent technical
+terms. Preserve exact identifiers, API names, commands, paths, quotations, and
+technical meaning.
+
+Apply these additional rules:
 
 - Prefer the shortest text that preserves the useful fact.
 - Describe current system behavior, not the branch, PR, or session that produced it.

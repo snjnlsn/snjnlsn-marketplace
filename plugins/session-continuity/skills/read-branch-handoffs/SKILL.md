@@ -69,6 +69,10 @@ Never auto-adopt a found handoff as the working handoff — adoption is `session
 
 ## Constraints
 
+- Use ASD-STE100 Simplified Technical English for your own explanatory prose.
+  Use short sentences, active voice, and consistent technical terms. Preserve
+  identifiers and paths. Keep quoted handoff content, including the required
+  verbatim `## Summary`, unchanged. Do not rewrite source handoffs for style.
 - **Read-only.** This skill never writes, edits, renames, or deletes handoffs. Writes route through `session-handoff` or `handle-callouts`; branch-end deletion routes through `finalize-branch`.
 - **Tolerate legacy filenames.** Some handoffs predate the `YYYY-MM-DD-HHMMSS-<author>--<slug>.md` convention; still read them. Migration prompts are `session-handoff`'s job, not this skill's.
 - **Empty result is fine.** Zero handoffs on the branch → report "No handoffs found on this branch" and exit; do not invent context.

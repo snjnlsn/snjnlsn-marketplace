@@ -54,7 +54,7 @@ Never create parent sections named with a bare callout keyword such as `## Disco
 ## Authoring Flow
 
 1. Determine the working handoff path from conversation context. If none exists, invoke `session-handoff` to lazy-create or rediscover it.
-2. Compose type, title, and a 1-3 sentence body. Use normal session voice; `finalize-branch` rewrites atemporally when routing to repo docs.
+2. Compose type, title, and a 1-3 sentence body. Use ASD-STE100 Simplified Technical English. Keep the session context; `finalize-branch` removes session-specific framing when routing to repo docs.
 3. Confirm unless the user explicitly named the type. Explicit typed requests can auto-write.
 4. Place under `## Callouts` after `## Summary` by default. Inline placement is allowed only when the user asks for it and the target section exists.
 5. Run the dedup check in `references/dedup.md`.
@@ -66,6 +66,9 @@ When the user or current diff indicates a prior callout is resolved, read `refer
 
 ## Writing Style
 
+- Use ASD-STE100 Simplified Technical English for callout prose and comments.
+  Use short sentences, active voice, and consistent technical terms. Preserve
+  exact identifiers, commands, paths, quotations, and technical meaning.
 - Lead with the finding.
 - Keep body to 1-3 sentences unless data/code fences are the substance.
 - Prefer `path:line` over restating code.

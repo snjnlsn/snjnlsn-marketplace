@@ -7,7 +7,7 @@ Personal Claude Code and Codex plugin marketplace for me.
 | Plugin | Purpose |
 |---|---|
 | [`overrides`](plugins/overrides/) | Deprecated Superpowers skill copies. Prefer the upstream `superpowers` plugin plus [`snjnlsn-dev-config`](plugins/snjnlsn-dev-config/) `superpowers-caveat` skill. |
-| [`snjnlsn-dev-config`](plugins/snjnlsn-dev-config/) | Personal development hooks, helper scripts, `superpowers-caveat`, and `good-quality-code` guidance. |
+| [`snjnlsn-dev-config`](plugins/snjnlsn-dev-config/) | Personal development hooks, helper scripts, `superpowers-caveat`, `good-quality-code`, and `elixir-research` guidance. |
 | [`session-continuity`](plugins/session-continuity/) | Per-session and per-branch documentation lifecycle: handoffs, callouts, retrospects, and branch finalization. Includes SessionStart context injection and a Stop wrap-up nudge. |
 
 ## Deprecation note

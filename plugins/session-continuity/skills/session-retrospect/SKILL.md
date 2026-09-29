@@ -37,6 +37,10 @@ Also activate when the Stop hook has surfaced a wrap-up nudge and the user accep
 
 ## Constraints
 
+- Use ASD-STE100 Simplified Technical English for retrospective prose and any
+  documentation or comments you edit. Use short sentences, active voice, and
+  consistent technical terms. Preserve exact identifiers, commands, paths,
+  quotations, and technical meaning.
 - Nothing is persisted before the user approves.
 - The "Retrospective" section in the handoff is narrative only (well / not well). Concrete file changes go to the files themselves; do not duplicate them in the handoff.
 - If the user approves only narrative without applying changes, that's fine — apply just the handoff append.

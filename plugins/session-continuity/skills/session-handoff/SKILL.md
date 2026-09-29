@@ -117,6 +117,10 @@ Routing:
 
 ## Writing Style
 
+Use ASD-STE100 Simplified Technical English for new handoff prose and comments.
+Use short sentences, active voice, and consistent technical terms. Preserve exact
+identifiers, commands, paths, and quotations. Keep technical meaning unchanged.
+
 Read `references/writing-style.md` before drafting or rewriting substantial handoff content.
 
 Short version: future sessions read handoffs to resume work, so prefer concise bullets, outcomes over journey, and `path:line` references over pasted code.

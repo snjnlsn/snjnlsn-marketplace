@@ -40,6 +40,14 @@ skills; it does not expand scope beyond the approved task.
 - Value simplicity over cleverness. The solution should be simpler than the
   problem it solves.
 
+## Documentation and Comments
+
+Use ASD-STE100 Simplified Technical English for documentation and code comments.
+Use short sentences, active voice, direct instructions, and consistent technical
+terms. Keep each sentence focused on one idea. Preserve exact identifiers, API
+names, commands, paths, and quoted text. Simplify the prose without changing its
+technical meaning.
+
 ## Ash-Specific Quality
 
 - Treat domains and their code interfaces as the caller-facing API.
