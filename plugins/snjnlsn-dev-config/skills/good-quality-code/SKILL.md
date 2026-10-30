@@ -183,13 +183,70 @@ Apply this section only to code that uses Ash.
 
 ## Testing Standard
 
-- Tests should verify behavior, not implementation trivia or mocks.
-- Use the project's standard test-data tools and exercise real behavior.
+### Test-Driven Development
+
+- For new behavior and bug fixes, use short red-green-refactor cycles. Define
+  an observable result, write a focused test, and run it before implementation.
+  Confirm that it fails because the behavior is missing or incorrect, not
+  because the test setup is broken. Add the smallest correct implementation,
+  confirm that the test passes, then refactor while the tests remain green.
+- For a bug fix, reproduce the defect in a regression test before fixing it
+  when a reliable automated reproduction is practical. If it is not, record
+  the limitation and use the closest reliable check without claiming that it
+  reproduces the defect.
+- Before changing unfamiliar or untested behavior, add characterization tests
+  for the contracts that must remain stable. Do not preserve a known defect as
+  the desired contract. For a refactor, use existing tests when they already
+  cover the affected behavior.
+- Use exploratory checks to resolve uncertainty before writing a lasting test.
+  Do not add tests that only restate implementation details or cover reversible,
+  low-impact prose, metadata, or formatting changes. Use proportionate validation
+  for those changes. Follow explicit repository testing requirements.
+
+### Choose Tests by Risk and Boundary
+
+Choose the lowest-cost test that can detect the relevant failure at the boundary
+that owns it. Add another level when it covers a distinct failure mode. A task
+does not need every test type, and a unit test does not prove that components
+work together.
+
+| Test type | Use when | Keep focused on |
+|---|---|---|
+| Unit | Rules, transformations, validation, or edge cases can be checked in isolation. | Observable inputs and results, with fast, precise failures. |
+| Integration | Correctness depends on components working together, such as persistence, transactions, authorization, HTTP contracts, or job execution. | Real project components and relevant infrastructure; verify contracts and side effects across the boundary. |
+| Browser | Correctness depends on browser behavior, such as JavaScript, DOM interaction, navigation, focus, or a critical user journey. | A small set of valuable journeys and browser-specific risks; use lower-level tests for exhaustive rule combinations. |
+| Property | A meaningful invariant applies across many inputs or operation sequences, such as round trips, ordering, idempotency, or state transitions. | Domain-valid generators, useful edge cases, and an oracle independent of the implementation. |
+
 - Test through the API that owns the contract. Use lower-level APIs in focused
-  tests where those APIs are the subject.
-- Cover the boundary that owns the behavior: domain tests for business
-  rules, ingestion tests for external data mapping, endpoint/journey tests
-  for HTTP behavior, and architecture tests for repo-wide conventions.
+  tests where those APIs are the subject. For framework-rendered UI tests,
+  identify which browser behavior remains untested.
+- For jobs, test enqueue arguments and worker effects separately. Add an
+  enqueue-to-execution integration test when their connection is a material risk.
+- For property tests, preserve reproducible seeds and use shrinking when the
+  tool supports it. Keep explicit regression examples for known defects.
+  Do not add randomized tests without a clear invariant.
+- For concurrency or recovery risks, exercise the relevant overlap, failure,
+  and recovery conditions. Sequential happy-path tests do not establish these
+  guarantees.
+
+### Reliable and Efficient Execution
+
+- Test observable behavior and meaningful failure paths. Avoid assertions on
+  private structure, incidental call order, or mocks alone. Coverage metrics
+  can reveal gaps; they are not a substitute for useful assertions.
+- Use the project's standard test-data tools. Keep fixtures small and isolate
+  mutable state. Use real components where their interaction is the subject.
+  Use test doubles at controlled external boundaries when needed, and verify
+  those contracts with suitable integration or contract checks.
+- Control clocks, randomness, and external dependencies. For asynchronous or
+  browser tests, wait for observable conditions with bounded timeouts instead
+  of fixed sleeps. Do not use retries to hide failures; investigate flaky tests.
+- Run focused tests during each development cycle. Before completion, run
+  affected suites and repository-required checks. Expand testing when shared
+  behavior, integration risk, or failures justify it. Do not repeat broad suites
+  without a new change or unresolved concern.
+- Report what was checked, what passed, and material gaps or skipped checks.
+  Distinguish manual observations from automated regression coverage.
 
 ## Review Questions
 
@@ -212,3 +269,7 @@ Ask these before calling work complete:
     implementation markers present where applicable?
 13. For Elixir code, are `@moduledoc`, `@doc`, `@impl`, and `@spec` present and
     accurate under the rules above?
+14. Did the change use an appropriate red-green-refactor cycle or a justified
+    alternative, and do the selected test levels cover its actual risks?
+15. Are tests deterministic, focused on contracts, and free of redundant
+    coverage that adds cost without detecting a distinct failure?
